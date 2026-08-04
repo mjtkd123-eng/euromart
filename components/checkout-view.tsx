@@ -103,12 +103,12 @@ export function CheckoutView() {
 
       {/* 요약 */}
       <div className="mt-4 rounded-2xl border border-border bg-card p-5">
-        <p className="mb-3 text-sm font-bold">{store.name}</p>
+        <p className="mb-3 text-sm font-bold">{localizeStoreName(store, lang)}</p>
         <div className="space-y-1.5 text-sm">
           {items.map((item) => (
             <div key={item.storeProductId} className="flex justify-between">
               <span className="text-muted-foreground">
-                {item.nameKo} <span className="text-xs">x{item.quantity}</span>
+                {localizeCartItemName(item, lang)} <span className="text-xs">x{item.quantity}</span>
               </span>
               <span className="font-medium">{formatFt(item.price * item.quantity)}</span>
             </div>
@@ -116,21 +116,21 @@ export function CheckoutView() {
         </div>
         <Separator className="my-3" />
         <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">배달비</span>
+          <span className="text-muted-foreground">{t.common.deliveryFee}</span>
           <span className="font-medium">{formatFt(store.deliveryFee)}</span>
         </div>
         <div className="mt-2 flex items-baseline justify-between">
-          <span className="font-bold">총 결제 금액</span>
+          <span className="font-bold">{t.checkout.grandTotal}</span>
           <span className="text-lg font-black">{formatFt(total)}</span>
         </div>
       </div>
 
       <p className="mt-3 text-center text-xs text-muted-foreground">
-        결제는 배달 시 문 앞에서 현금 또는 카드로 진행됩니다. (온라인 결제 연동은 향후 추가 예정)
+        {t.checkout.footerNote}
       </p>
 
       <Button type="submit" className="mt-4 h-12 w-full rounded-full text-base font-bold">
-        {formatFt(total)} 주문 확정하기
+        {t.checkout.confirmBtn(formatFt(total))}
       </Button>
     </form>
   )

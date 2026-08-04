@@ -65,7 +65,7 @@ export function SiteHeader() {
                   >
                     <CategoryIcon icon={cat.icon} className="size-5 text-primary" />
                     <span>{localizeCategory(cat, lang)}</span>
-                    {lang !== "HU" && (
+                    {lang === "KR" && (
                       <span className="ml-auto text-xs text-muted-foreground">{cat.nameHu}</span>
                     )}
                   </SheetClose>
