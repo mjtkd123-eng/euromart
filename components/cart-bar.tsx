@@ -4,10 +4,12 @@ import Link from "next/link"
 import { ShoppingBag } from "lucide-react"
 import { useCart } from "@/lib/cart-context"
 import { formatFt } from "@/lib/format"
+import { useLanguage } from "@/lib/language-context"
 
 /** 마트 상세 하단에 뜨는 스티키 장바구니 요약 바 */
 export function CartBar() {
   const { itemCount, subtotal } = useCart()
+  const { t } = useLanguage()
 
   if (itemCount === 0) return null
 
@@ -22,7 +24,7 @@ export function CartBar() {
             <span className="flex size-7 items-center justify-center rounded-full bg-primary-foreground/20 text-sm font-bold">
               {itemCount}
             </span>
-            장바구니 보기
+            {t.cartBar.viewCart}
           </span>
           <span className="flex items-center gap-2 font-black">
             {formatFt(subtotal)}

@@ -8,6 +8,8 @@ import { StoreCard } from "@/components/store-card"
 import { HeroCarousel } from "@/components/hero-carousel"
 import { Input } from "@/components/ui/input"
 import { storeProducts, catalogProducts } from "@/lib/data"
+import { useLanguage } from "@/lib/language-context"
+import { localizeCategory } from "@/lib/i18n"
 
 /** 특정 카테고리 상품을 파는 마트 id 집합 */
 function storeIdsForCategory(categoryId: string): Set<string> {
@@ -16,6 +18,7 @@ function storeIdsForCategory(categoryId: string): Set<string> {
 }
 
 export function HomeView({ stores, categories }: { stores: Store[]; categories: Category[] }) {
+  const { lang, t } = useLanguage()
   const [query, setQuery] = useState("")
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
 
@@ -31,7 +34,8 @@ export function HomeView({ stores, categories }: { stores: Store[]; categories: 
         (s) =>
           s.name.toLowerCase().includes(q) ||
           s.nameHu.toLowerCase().includes(q) ||
-          s.tags.some((t) => t.toLowerCase().includes(q)),
+          s.nameEn.toLowerCase().includes(q) ||
+          s.tags.some((tag) => tag.toLowerCase().includes(q)),
       )
     }
     // 영업중인 마트 우선 정렬
@@ -51,9 +55,9 @@ export function HomeView({ stores, categories }: { stores: Store[]; categories: 
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="마트 이름이나 상품을 검색하세요 (예: 라면, 김치)"
+          placeholder={t.home.searchPlaceholder}
           className="h-12 rounded-full pl-12 text-base"
-          aria-label="마트 검색"
+          aria-label={t.home.searchAria}
         />
       </div>
 
@@ -67,7 +71,7 @@ export function HomeView({ stores, categories }: { stores: Store[]; categories: 
               : "border-border bg-card text-foreground hover:bg-muted"
           }`}
         >
-          전체
+          {t.common.all}
         </button>
         {categories.map((cat) => {
           const active = activeCategory === cat.id
@@ -82,7 +86,7 @@ export function HomeView({ stores, categories }: { stores: Store[]; categories: 
               }`}
             >
               <CategoryIcon icon={cat.icon} className="size-4" />
-              {cat.name}
+              {localizeCategory(cat, lang)}
             </button>
           )
         })}
@@ -91,13 +95,13 @@ export function HomeView({ stores, categories }: { stores: Store[]; categories: 
       {/* 마트 목록 */}
       <div className="mb-3 flex items-baseline justify-between">
         <h2 className="text-lg font-bold">
-          배달 가능한 마트 <span className="text-primary">{filtered.length}</span>
+          {t.home.availableMarts} <span className="text-primary">{filtered.length}</span>
         </h2>
       </div>
 
       {filtered.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border py-16 text-center text-muted-foreground">
-          조건에 맞는 마트가 없습니다. 다른 검색어나 카테고리를 시도해 보세요.
+          {t.home.empty}
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -12,6 +12,8 @@ import { ProductRow } from "@/components/product-row"
 import { CartBar } from "@/components/cart-bar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { useLanguage } from "@/lib/language-context"
+import { localizeCategory, localizeStoreName, localizeStoreDesc } from "@/lib/i18n"
 
 interface Props {
   store: Store
@@ -22,6 +24,8 @@ interface Props {
 export function StoreView({ store, categories, products }: Props) {
   const [activeCat, setActiveCat] = useState<string | null>(null)
   const { pending, setPending, confirmSwitch } = useCart()
+  const { lang, t } = useLanguage()
+  const storeName = localizeStoreName(store, lang)
 
   const visible = useMemo(
     () => (activeCat ? products.filter((p) => p.categoryId === activeCat) : products),
@@ -45,7 +49,7 @@ export function StoreView({ store, categories, products }: Props) {
       <div className="relative h-48 w-full overflow-hidden sm:h-64">
         <Image
           src={store.coverImage || "/placeholder.svg"}
-          alt={`${store.name} 매장 사진`}
+          alt={t.store.coverAlt(storeName)}
           fill
           priority
           sizes="100vw"
@@ -54,7 +58,7 @@ export function StoreView({ store, categories, products }: Props) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/10" />
         <div className="absolute inset-x-0 top-0 p-4">
           <Button asChild size="icon" variant="secondary" className="rounded-full shadow-sm">
-            <Link href="/" aria-label="홈으로">
+            <Link href="/" aria-label={t.store.homeAria}>
               <ChevronLeft className="size-5" aria-hidden="true" />
             </Link>
           </Button>
@@ -66,18 +70,18 @@ export function StoreView({ store, categories, products }: Props) {
         <div className="-mt-10 rounded-2xl border border-border bg-card p-5 shadow-sm">
           <div className="flex items-start gap-4">
             <div className="relative -mt-12 size-20 shrink-0 overflow-hidden rounded-2xl border-4 border-card bg-muted shadow-sm">
-              <Image src={store.logo || "/placeholder.svg"} alt={`${store.name} 로고`} fill sizes="80px" className="object-cover" />
+              <Image src={store.logo || "/placeholder.svg"} alt={t.store.logoAlt(storeName)} fill sizes="80px" className="object-cover" />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-black">{store.name}</h1>
+                <h1 className="text-xl font-black">{storeName}</h1>
                 {store.isOpen ? (
-                  <Badge className="rounded-full bg-chart-3 text-white">영업중</Badge>
+                  <Badge className="rounded-full bg-chart-3 text-white">{t.common.open}</Badge>
                 ) : (
-                  <Badge variant="secondary" className="rounded-full">영업종료</Badge>
+                  <Badge variant="secondary" className="rounded-full">{t.common.closed}</Badge>
                 )}
               </div>
-              <p className="mt-0.5 text-sm text-muted-foreground text-pretty">{store.description}</p>
+              <p className="mt-0.5 text-sm text-muted-foreground text-pretty">{localizeStoreDesc(store, lang)}</p>
             </div>
           </div>
 
@@ -89,13 +93,13 @@ export function StoreView({ store, categories, products }: Props) {
             </span>
             <span className="flex items-center gap-1 text-muted-foreground">
               <Clock className="size-4" aria-hidden="true" />
-              {store.deliveryTimeMin}분
+              {t.common.minutes(store.deliveryTimeMin)}
             </span>
             <span className="flex items-center gap-1 text-muted-foreground">
               <Bike className="size-4" aria-hidden="true" />
-              배달비 {formatFt(store.deliveryFee)}
+              {t.common.deliveryFee} {formatFt(store.deliveryFee)}
             </span>
-            <span className="text-muted-foreground">· 최소주문 {formatFt(store.minOrder)}</span>
+            <span className="text-muted-foreground">· {t.common.minOrder} {formatFt(store.minOrder)}</span>
           </div>
           <p className="mt-2 text-xs text-muted-foreground">{store.address}</p>
         </div>
@@ -109,7 +113,7 @@ export function StoreView({ store, categories, products }: Props) {
                 activeCat === null ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card hover:bg-muted"
               }`}
             >
-              전체
+              {t.common.all}
             </button>
             {categories.map((cat) => {
               const active = activeCat === cat.id
@@ -122,7 +126,7 @@ export function StoreView({ store, categories, products }: Props) {
                   }`}
                 >
                   <CategoryIcon icon={cat.icon} className="size-4" />
-                  {cat.name}
+                  {localizeCategory(cat, lang)}
                 </button>
               )
             })}
@@ -138,7 +142,7 @@ export function StoreView({ store, categories, products }: Props) {
                 {cat && (
                   <h2 className="flex items-center gap-2 pb-1 pt-5 text-sm font-bold text-muted-foreground">
                     <CategoryIcon icon={cat.icon} className="size-4" />
-                    {cat.name}
+                    {localizeCategory(cat, lang)}
                   </h2>
                 )}
                 <div className="divide-y divide-border">
@@ -161,16 +165,16 @@ export function StoreView({ store, categories, products }: Props) {
             <div className="mb-3 flex size-11 items-center justify-center rounded-full bg-accent text-accent-foreground">
               <ShoppingBasket className="size-5" aria-hidden="true" />
             </div>
-            <h3 className="text-lg font-bold">장바구니를 비울까요?</h3>
+            <h3 className="text-lg font-bold">{t.store.switchTitle}</h3>
             <p className="mt-1 text-sm text-muted-foreground text-pretty">
-              장바구니에는 한 번에 한 마트의 상품만 담을 수 있어요. 새 상품을 담으면 기존 장바구니가 비워집니다.
+              {t.store.switchBody}
             </p>
             <div className="mt-5 flex gap-2">
               <Button variant="outline" className="flex-1" onClick={() => setPending(null)}>
-                취소
+                {t.store.cancel}
               </Button>
               <Button className="flex-1" onClick={() => confirmSwitch(pending.product)}>
-                비우고 담기
+                {t.store.clearAndAdd}
               </Button>
             </div>
           </div>
