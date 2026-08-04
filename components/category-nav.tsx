@@ -4,6 +4,7 @@ const NAV_LINKS = [
   { label: "신규입고", href: "/" },
   { label: "세일상품", href: "/" },
   { label: "인기상품", href: "/" },
+  { label: "세트메뉴", href: "/" },
   { label: "라면/면류", href: "/" },
   { label: "김치/반찬", href: "/" },
   { label: "신선/채소", href: "/" },
