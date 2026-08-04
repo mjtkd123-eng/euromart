@@ -16,11 +16,18 @@ export interface Store {
   slug: string
   name: string
   nameHu: string
+  /** 영어 매장명 */
+  nameEn: string
   /** 매장 로고 이미지 경로 */
   logo: string
   /** 매장 상세 상단 커버 이미지 */
   coverImage: string
+  /** 설명 (한국어) */
   description: string
+  /** 설명 (헝가리어) */
+  descriptionHu: string
+  /** 설명 (영어) */
+  descriptionEn: string
   district: District
   address: string
   /** 배달비 (Ft) */
@@ -40,6 +47,8 @@ export interface Category {
   id: string
   name: string
   nameHu: string
+  /** 영어 카테고리명 */
+  nameEn: string
   /** lucide-react 아이콘 이름 매핑용 키 */
   icon: string
 }
@@ -52,7 +61,14 @@ export interface CatalogProduct {
   id: string
   nameKo: string
   nameHu: string
+  /** 영어 상품명 */
+  nameEn: string
+  /** 설명 (한국어) */
   description: string
+  /** 설명 (헝가리어) */
+  descriptionHu: string
+  /** 설명 (영어) */
+  descriptionEn: string
   imageUrl: string
   categoryId: string
   /** 용량/단위 표기 (예: "120g", "1L", "5개입") */
@@ -82,6 +98,8 @@ export interface StoreProduct {
 export interface Vendor {
   id: string
   name: string
+  /** 영어 이름 */
+  nameEn: string
   email: string
   storeId: string
 }
@@ -93,6 +111,8 @@ export interface CartItem {
   storeId: string
   nameKo: string
   nameHu: string
+  /** 영어 상품명 (담은 시점 스냅샷) */
+  nameEn: string
   imageUrl: string
   unit: string
   /** 담은 시점의 단가 (Ft) */
