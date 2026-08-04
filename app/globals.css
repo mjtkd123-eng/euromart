@@ -37,6 +37,8 @@
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
+  --color-brand-orange: var(--brand-orange);
+  --color-brand-orange-foreground: var(--brand-orange-foreground);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -56,6 +58,8 @@
   --popover-foreground: oklch(0.22 0.02 40);
   --primary: oklch(0.64 0.2 30);
   --primary-foreground: oklch(0.99 0.01 60);
+  --brand-orange: oklch(0.72 0.18 55);
+  --brand-orange-foreground: oklch(0.99 0.01 60);
   --secondary: oklch(0.96 0.02 70);
   --secondary-foreground: oklch(0.3 0.03 40);
   --muted: oklch(0.96 0.01 70);

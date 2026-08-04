@@ -1,10 +1,11 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { Search, MapPin } from "lucide-react"
+import { Search } from "lucide-react"
 import type { Store, Category } from "@/lib/types"
 import { CategoryIcon } from "@/components/category-icon"
 import { StoreCard } from "@/components/store-card"
+import { HeroCarousel } from "@/components/hero-carousel"
 import { Input } from "@/components/ui/input"
 import { storeProducts, catalogProducts } from "@/lib/data"
 
@@ -39,21 +40,10 @@ export function HomeView({ stores, categories }: { stores: Store[]; categories: 
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
-      {/* 히어로 */}
-      <section className="mb-6 overflow-hidden rounded-3xl bg-primary px-6 py-8 text-primary-foreground sm:px-10 sm:py-12">
-        <p className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-primary-foreground/15 px-3 py-1 text-xs font-medium">
-          <MapPin className="size-3.5" aria-hidden="true" />
-          부다페스트 전역 배달
-        </p>
-        <h1 className="text-pretty text-2xl font-black leading-tight sm:text-4xl">
-          한국의 맛, 집 앞까지
-          <br />
-          부다페스트 한인·아시안 마트 배달
-        </h1>
-        <p className="mt-3 max-w-lg text-sm text-primary-foreground/80 sm:text-base">
-          원하는 마트를 골라 신라면부터 김치, 신선 채소까지. 마트마다 상품과 가격이 다르니 비교하며 담아보세요.
-        </p>
-      </section>
+      {/* 히어로 캐러셀 */}
+      <div className="mb-6">
+        <HeroCarousel />
+      </div>
 
       {/* 검색 */}
       <div className="relative mb-5">
