@@ -2,11 +2,10 @@
 
 import { useEffect, useRef, useState } from "react"
 import { MapPin, ChevronDown, Check } from "lucide-react"
-import { regions } from "@/lib/storesData"
 import { useEuromart } from "@/lib/euromart-context"
 
 export function RegionSwitcher() {
-  const { region, regionId, setRegionId } = useEuromart()
+  const { regions, region, regionId, setRegionId } = useEuromart()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 

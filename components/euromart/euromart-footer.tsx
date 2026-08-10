@@ -1,11 +1,10 @@
 "use client"
 
 import { ShoppingBag, MapPin } from "lucide-react"
-import { regions } from "@/lib/storesData"
 import { useEuromart } from "@/lib/euromart-context"
 
 export function EuromartFooter() {
-  const { regionId, setRegionId } = useEuromart()
+  const { regions, regionId, setRegionId } = useEuromart()
 
   return (
     <footer className="border-t border-border bg-card">

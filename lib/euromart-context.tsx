@@ -1,13 +1,14 @@
 "use client"
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
-import {
-  regions,
-  getRegion,
-  getRegionProducts,
-  type Region,
-  type ResolvedProduct,
-} from "./storesData"
+import { getRegion, getRegionProducts, type Region, type ResolvedProduct } from "./storesData"
+
+export interface CurrentUser {
+  id: string
+  email: string | null
+  fullName: string | null
+  role: "customer" | "vendor" | "admin"
+}
 
 /** 장바구니 라인 — 지역이 바뀌면 통화가 달라지므로 지역별로 분리 저장 */
 interface CartLine {
@@ -21,7 +22,11 @@ export interface CartLineView extends ResolvedProduct {
 }
 
 interface EuromartContextValue {
+  /* 세션 */
+  user: CurrentUser | null
+
   /* 지역 */
+  regions: Region[]
   region: Region
   regionId: string
   setRegionId: (id: string) => void
@@ -59,8 +64,17 @@ const CART_KEY = "k-euromart-carts"
 
 type CartsByRegion = Record<string, CartLine[]>
 
-export function EuromartProvider({ children }: { children: ReactNode }) {
-  const [regionId, setRegionIdState] = useState<string>(regions[0].id)
+export function EuromartProvider({
+  initialRegions,
+  user = null,
+  children,
+}: {
+  initialRegions: Region[]
+  user?: CurrentUser | null
+  children: ReactNode
+}) {
+  const regions = initialRegions
+  const [regionId, setRegionIdState] = useState<string>(regions[0]?.id ?? "")
   const [carts, setCarts] = useState<CartsByRegion>({})
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
@@ -80,7 +94,7 @@ export function EuromartProvider({ children }: { children: ReactNode }) {
       // ignore
     }
     setHydrated(true)
-  }, [])
+  }, [regions])
 
   // localStorage 저장
   useEffect(() => {
@@ -95,17 +109,15 @@ export function EuromartProvider({ children }: { children: ReactNode }) {
 
   function setRegionId(id: string) {
     setRegionIdState(id)
-    // 지역이 바뀌면 카테고리/검색 필터는 초기화 (상품 구성이 달라지므로)
     setActiveCategory(null)
     setSearchQuery("")
   }
 
   const value = useMemo<EuromartContextValue>(() => {
-    const region = getRegion(regionId)
+    const region = getRegion(regions, regionId)
     const products = getRegionProducts(region)
-    const currentCart = carts[regionId] ?? []
+    const currentCart = carts[region.id] ?? []
 
-    // 필터링
     const q = searchQuery.trim().toLowerCase()
     const filteredProducts = products.filter((p) => {
       const matchCat = !activeCategory || p.category === activeCategory
@@ -117,7 +129,6 @@ export function EuromartProvider({ children }: { children: ReactNode }) {
       return matchCat && matchQuery
     })
 
-    // 장바구니 뷰 (상품 정보 결합)
     const cart: CartLineView[] = currentCart
       .map((line) => {
         const product = products.find((p) => p.id === line.productId)
@@ -134,7 +145,7 @@ export function EuromartProvider({ children }: { children: ReactNode }) {
     const total = subtotal + deliveryFee
 
     function mutate(fn: (lines: CartLine[]) => CartLine[]) {
-      setCarts((prev) => ({ ...prev, [regionId]: fn(prev[regionId] ?? []) }))
+      setCarts((prev) => ({ ...prev, [region.id]: fn(prev[region.id] ?? []) }))
     }
 
     function addItem(productId: string) {
@@ -163,12 +174,14 @@ export function EuromartProvider({ children }: { children: ReactNode }) {
     }
 
     function clearCart() {
-      setCarts((prev) => ({ ...prev, [regionId]: [] }))
+      setCarts((prev) => ({ ...prev, [region.id]: [] }))
     }
 
     return {
+      user,
+      regions,
       region,
-      regionId,
+      regionId: region.id,
       setRegionId,
       products,
       filteredProducts,
@@ -191,7 +204,7 @@ export function EuromartProvider({ children }: { children: ReactNode }) {
       setCartOpen,
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [regionId, carts, activeCategory, searchQuery, cartOpen])
+  }, [regions, regionId, carts, activeCategory, searchQuery, cartOpen, user])
 
   return <EuromartContext.Provider value={value}>{children}</EuromartContext.Provider>
 }

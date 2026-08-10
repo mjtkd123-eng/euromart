@@ -1,9 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { ShoppingBag, Plus, Minus, Trash2, Truck, CheckCircle2, ArrowLeft } from "lucide-react"
+import { ShoppingBag, Plus, Minus, Trash2, Truck, CheckCircle2, ArrowLeft, AlertCircle } from "lucide-react"
 import { useEuromart } from "@/lib/euromart-context"
 import { formatPrice } from "@/lib/storesData"
+import { placeOrder } from "@/app/actions/orders"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,6 +15,8 @@ type Step = "cart" | "checkout" | "done"
 export function CartDrawer() {
   const {
     region,
+    regionId,
+    user,
     cart,
     itemCount,
     subtotal,
@@ -27,17 +30,43 @@ export function CartDrawer() {
     setCartOpen,
   } = useEuromart()
   const [step, setStep] = useState<Step>("cart")
+  const [form, setForm] = useState({ name: "", address: "", phone: "", promo: "" })
+  const [submitting, setSubmitting] = useState(false)
+  const [orderError, setOrderError] = useState<string | null>(null)
+  const [orderId, setOrderId] = useState<string | null>(null)
 
   const currency = region.currency
   const remainingForFree = Math.max(0, region.freeDeliveryOver - subtotal)
 
   function handleClose(open: boolean) {
     setCartOpen(open)
-    if (!open) setTimeout(() => setStep("cart"), 200)
+    if (!open)
+      setTimeout(() => {
+        setStep("cart")
+        setOrderError(null)
+      }, 200)
   }
 
-  function handlePlaceOrder(e: React.FormEvent) {
+  async function handlePlaceOrder(e: React.FormEvent) {
     e.preventDefault()
+    setSubmitting(true)
+    setOrderError(null)
+
+    const result = await placeOrder({
+      regionId,
+      customerName: form.name,
+      address: form.address,
+      phone: form.phone,
+      promoCode: form.promo,
+      items: cart.map((l) => ({ productId: l.id, quantity: l.quantity })),
+    })
+
+    setSubmitting(false)
+    if (!result.ok) {
+      setOrderError(result.error ?? "주문에 실패했습니다.")
+      return
+    }
+    setOrderId(result.orderId ?? null)
     setStep("done")
     clearCart()
   }

@@ -5,6 +5,7 @@ import { useEuromart } from "@/lib/euromart-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { RegionSwitcher } from "./region-switcher"
+import { AccountMenu } from "./account-menu"
 
 export function EuromartHeader() {
   const { region, itemCount, setCartOpen, searchQuery, setSearchQuery } = useEuromart()
@@ -63,21 +64,24 @@ export function EuromartHeader() {
           )}
         </div>
 
-        {/* 장바구니 */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative ml-auto md:ml-0"
-          aria-label="장바구니 열기"
-          onClick={() => setCartOpen(true)}
-        >
-          <ShoppingBag className="size-5" aria-hidden="true" />
-          {itemCount > 0 && (
-            <span className="absolute right-0.5 top-0.5 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-              {itemCount}
-            </span>
-          )}
-        </Button>
+        {/* 장바구니 + 계정 */}
+        <div className="ml-auto flex items-center gap-1 md:ml-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative"
+            aria-label="장바구니 열기"
+            onClick={() => setCartOpen(true)}
+          >
+            <ShoppingBag className="size-5" aria-hidden="true" />
+            {itemCount > 0 && (
+              <span className="absolute right-0.5 top-0.5 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                {itemCount}
+              </span>
+            )}
+          </Button>
+          <AccountMenu />
+        </div>
       </div>
 
       {/* 검색 (모바일) */}
