@@ -156,7 +156,7 @@ const KR: Dict = {
     searchPlaceholder: "상품이나 마트를 검색하세요 (예: 라면, 김치)",
     searchClose: "검색 닫기",
   },
-    nav: ["신규입고", "세일상품", "인기상품", "밀키트", "라면/면류", "김치/반찬", "신선/채소", "냉동식품"],
+    nav: ["신규입고", "세일상품", "인기상품", "DIY", "라면/면류", "김치/반찬", "신선/채소", "냉동식품"],
   hero: {
     slides: [
       { eyebrow: "신선하게 배달", title: "한 포기 안에 담긴 정성", subtitle: "비비고 포기김치" },
@@ -286,7 +286,7 @@ const HU: Dict = {
     searchPlaceholder: "Keress terméket vagy boltot (pl. ramen, kimchi)",
     searchClose: "Keresés bezárása",
   },
-  nav: ["Új termékek", "Akció", "Népszerű", "Étkezőcsomag", "Ramen/Tészta", "Kimchi/Köret", "Friss/Zöldség", "Fagyasztott"],
+  nav: ["Új termékek", "Akció", "Népszerű", "DIY", "Ramen/Tészta", "Kimchi/Köret", "Friss/Zöldség", "Fagyasztott"],
   hero: {
     slides: [
       { eyebrow: "Frissen szállítva", title: "Gondoskodás egy fejben", subtitle: "Bibigo egész kimchi" },
@@ -419,7 +419,7 @@ const EN: Dict = {
     searchPlaceholder: "Search products or marts (e.g. ramen, kimchi)",
     searchClose: "Close search",
   },
-    nav: ["New arrivals", "Sale", "Popular", "Meal kit", "Ramen/Noodles", "Kimchi/Sides", "Fresh/Veggies", "Frozen"],
+    nav: ["New arrivals", "Sale", "Popular", "DIY", "Ramen/Noodles", "Kimchi/Sides", "Fresh/Veggies", "Frozen"],
   hero: {
     slides: [
       { eyebrow: "Delivered fresh", title: "Care packed into every head", subtitle: "Bibigo whole cabbage kimchi" },
