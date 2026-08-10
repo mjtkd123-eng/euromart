@@ -12,9 +12,9 @@ const notoSansKr = Noto_Sans_KR({
 })
 
 export const metadata: Metadata = {
-  title: '부다페스트 마트 배달 | Budapest Mart',
+  title: 'K-EuroMart | 유럽 한국 식료품 배달',
   description:
-    '부다페스트 한인·아시안 마트 통합 배달 서비스. 원하는 마트를 골라 신선한 한국 식료품을 집앞까지 배달받으세요.',
+    '부다페스트, 베를린, 파리, 비엔나, 프라하 등 유럽 주요 도시의 한국 식료품을 현지 통화로 주문하세요. 도시별 매장에서 신선한 한식 재료를 집앞까지 배달합니다.',
   generator: 'v0.app',
 }
 
