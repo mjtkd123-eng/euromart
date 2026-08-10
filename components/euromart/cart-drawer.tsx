@@ -38,6 +38,11 @@ export function CartDrawer() {
   const currency = region.currency
   const remainingForFree = Math.max(0, region.freeDeliveryOver - subtotal)
 
+  function goToCheckout() {
+    setForm((f) => ({ ...f, name: f.name || user?.fullName || "" }))
+    setStep("checkout")
+  }
+
   function handleClose(open: boolean) {
     setCartOpen(open)
     if (!open)
@@ -100,6 +105,11 @@ export function CartDrawer() {
               <p className="mt-1 text-sm text-muted-foreground">
                 {region.store.ko}에서 곧 배송을 준비합니다.
               </p>
+              {orderId && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  주문번호 · <span className="font-mono font-semibold">{orderId.slice(0, 8).toUpperCase()}</span>
+                </p>
+              )}
             </div>
             <Button className="mt-2 rounded-full" onClick={() => handleClose(false)}>
               쇼핑 계속하기
@@ -192,16 +202,54 @@ export function CartDrawer() {
                   <p className="text-sm font-bold text-foreground">배송 정보</p>
                   <div className="grid gap-1.5">
                     <Label htmlFor="name">받는 분 · Name</Label>
-                    <Input id="name" required placeholder="홍길동" className="h-11" />
+                    <Input
+                      id="name"
+                      required
+                      placeholder="홍길동"
+                      className="h-11"
+                      value={form.name}
+                      onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                    />
                   </div>
                   <div className="grid gap-1.5">
                     <Label htmlFor="address">주소 · Address ({region.city})</Label>
-                    <Input id="address" required placeholder={`${region.city}, ${region.country}`} className="h-11" />
+                    <Input
+                      id="address"
+                      required
+                      placeholder={`${region.city}, ${region.country}`}
+                      className="h-11"
+                      value={form.address}
+                      onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
+                    />
                   </div>
                   <div className="grid gap-1.5">
                     <Label htmlFor="phone">연락처 · Phone</Label>
-                    <Input id="phone" required type="tel" placeholder="+00 000 000 000" className="h-11" />
+                    <Input
+                      id="phone"
+                      required
+                      type="tel"
+                      placeholder="+00 000 000 000"
+                      className="h-11"
+                      value={form.phone}
+                      onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                    />
                   </div>
+                  <div className="grid gap-1.5">
+                    <Label htmlFor="promo">프로모션 코드 · Promo (선택)</Label>
+                    <Input
+                      id="promo"
+                      placeholder="WELCOME10"
+                      className="h-11 uppercase"
+                      value={form.promo}
+                      onChange={(e) => setForm((f) => ({ ...f, promo: e.target.value }))}
+                    />
+                  </div>
+                  {orderError && (
+                    <p className="flex items-center gap-1.5 rounded-lg bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">
+                      <AlertCircle className="size-4 shrink-0" aria-hidden="true" />
+                      {orderError}
+                    </p>
+                  )}
                 </form>
               )}
             </div>
@@ -226,12 +274,17 @@ export function CartDrawer() {
               </dl>
 
               {step === "cart" ? (
-                <Button className="h-12 w-full rounded-full text-base" onClick={() => setStep("checkout")}>
+                <Button className="h-12 w-full rounded-full text-base" onClick={goToCheckout}>
                   결제하기 · Checkout
                 </Button>
               ) : (
-                <Button type="submit" form="checkout-form" className="h-12 w-full rounded-full text-base">
-                  {formatPrice(total, currency)} 주문하기
+                <Button
+                  type="submit"
+                  form="checkout-form"
+                  disabled={submitting}
+                  className="h-12 w-full rounded-full text-base"
+                >
+                  {submitting ? "주문 처리 중..." : `${formatPrice(total, currency)} 주문하기`}
                 </Button>
               )}
             </div>
