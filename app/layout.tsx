@@ -1,8 +1,6 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Noto_Sans_KR } from 'next/font/google'
-import { CartProvider } from '@/lib/cart-context'
-import { LanguageProvider } from '@/lib/language-context'
 import './globals.css'
 
 const notoSansKr = Noto_Sans_KR({
@@ -30,9 +28,7 @@ export default function RootLayout({
   return (
     <html lang="ko" className={`${notoSansKr.variable} bg-background`}>
       <body className="font-sans antialiased">
-        <LanguageProvider>
-          <CartProvider>{children}</CartProvider>
-        </LanguageProvider>
+        {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
