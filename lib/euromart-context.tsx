@@ -21,15 +21,33 @@ export interface CartLineView extends ResolvedProduct {
   lineTotal: number
 }
 
+export type BrowseMode = "stores" | "products"
+
+export interface CountryOption {
+  code: string
+  name: string
+  storeCount: number
+}
+
 interface EuromartContextValue {
   /* 세션 */
   user: CurrentUser | null
 
-  /* 지역 */
+  /* 지역 / 국가 */
   regions: Region[]
   region: Region
   regionId: string
   setRegionId: (id: string) => void
+  countryCode: string
+  countries: CountryOption[]
+  /** 네비에서 국가 선택 → 해당 국가 매장 목록 */
+  selectCountry: (code: string) => void
+  /** 매장 카드 선택 → 상품 카탈로그 */
+  openStore: (regionId: string) => void
+  /** 상품 보기에서 매장 목록으로 돌아가기 */
+  backToStores: () => void
+  storesInCountry: Region[]
+  browseMode: BrowseMode
 
   /* 상품 / 필터 */
   products: ResolvedProduct[]
@@ -75,6 +93,8 @@ export function EuromartProvider({
 }) {
   const regions = initialRegions
   const [regionId, setRegionIdState] = useState<string>(regions[0]?.id ?? "")
+  const [countryCode, setCountryCode] = useState<string>(regions[0]?.countryCode ?? "")
+  const [browseMode, setBrowseMode] = useState<BrowseMode>("stores")
   const [carts, setCarts] = useState<CartsByRegion>({})
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
@@ -86,7 +106,9 @@ export function EuromartProvider({
     try {
       const savedRegion = localStorage.getItem(REGION_KEY)
       if (savedRegion && regions.some((r) => r.id === savedRegion)) {
-        setRegionIdState(savedRegion)
+        const saved = regions.find((r) => r.id === savedRegion)!
+        setRegionIdState(saved.id)
+        setCountryCode(saved.countryCode)
       }
       const savedCarts = localStorage.getItem(CART_KEY)
       if (savedCarts) setCarts(JSON.parse(savedCarts))
@@ -108,13 +130,50 @@ export function EuromartProvider({
   }, [regionId, carts, hydrated])
 
   function setRegionId(id: string) {
+    const next = regions.find((r) => r.id === id)
     setRegionIdState(id)
+    if (next) setCountryCode(next.countryCode)
+    setActiveCategory(null)
+    setSearchQuery("")
+  }
+
+  function selectCountry(code: string) {
+    const inCountry = regions.filter((r) => r.countryCode === code)
+    if (!inCountry.length) return
+    setCountryCode(code)
+    setRegionIdState(inCountry[0].id)
+    setBrowseMode("stores")
+    setActiveCategory(null)
+    setSearchQuery("")
+  }
+
+  function openStore(id: string) {
+    const next = regions.find((r) => r.id === id)
+    if (!next) return
+    setRegionIdState(next.id)
+    setCountryCode(next.countryCode)
+    setBrowseMode("products")
+    setActiveCategory(null)
+    setSearchQuery("")
+  }
+
+  function backToStores() {
+    setBrowseMode("stores")
     setActiveCategory(null)
     setSearchQuery("")
   }
 
   const value = useMemo<EuromartContextValue>(() => {
     const region = getRegion(regions, regionId)
+    const activeCountry = countryCode || region.countryCode
+    const storesInCountry = regions.filter((r) => r.countryCode === activeCountry)
+    const countries: CountryOption[] = []
+    for (const r of regions) {
+      const existing = countries.find((c) => c.code === r.countryCode)
+      if (existing) existing.storeCount += 1
+      else countries.push({ code: r.countryCode, name: r.country, storeCount: 1 })
+    }
+
     const products = getRegionProducts(region)
     const currentCart = carts[region.id] ?? []
 
@@ -183,6 +242,13 @@ export function EuromartProvider({
       region,
       regionId: region.id,
       setRegionId,
+      countryCode: activeCountry,
+      countries,
+      selectCountry,
+      openStore,
+      backToStores,
+      storesInCountry,
+      browseMode,
       products,
       filteredProducts,
       activeCategory,
@@ -204,7 +270,7 @@ export function EuromartProvider({
       setCartOpen,
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [regions, regionId, carts, activeCategory, searchQuery, cartOpen, user])
+  }, [regions, regionId, countryCode, browseMode, carts, activeCategory, searchQuery, cartOpen, user])
 
   return <EuromartContext.Provider value={value}>{children}</EuromartContext.Provider>
 }

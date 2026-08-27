@@ -8,7 +8,10 @@ import { RegionSwitcher } from "./region-switcher"
 import { AccountMenu } from "./account-menu"
 
 export function EuromartHeader() {
-  const { region, itemCount, setCartOpen, searchQuery, setSearchQuery } = useEuromart()
+  const { region, itemCount, setCartOpen, searchQuery, setSearchQuery, browseMode } = useEuromart()
+  const searchPlaceholder =
+    browseMode === "stores" ? "매장 검색 · Search stores" : "상품 검색 · Search products"
+  const searchLabel = browseMode === "stores" ? "매장 검색" : "상품 검색"
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -31,7 +34,9 @@ export function EuromartHeader() {
             <span className="text-base font-black tracking-tight">
               K<span className="text-primary">EuroMart</span>
             </span>
-            <span className="hidden text-[11px] text-muted-foreground sm:block">{region.store.ko}</span>
+            <span className="hidden text-[11px] text-muted-foreground sm:block">
+              {browseMode === "stores" ? `${region.country} 매장` : region.store.ko}
+            </span>
           </div>
         </div>
 
@@ -49,9 +54,9 @@ export function EuromartHeader() {
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="상품 검색 · Search products"
+            placeholder={searchPlaceholder}
             className="h-11 rounded-full pl-10 pr-9"
-            aria-label="상품 검색"
+            aria-label={searchLabel}
           />
           {searchQuery && (
             <button
@@ -94,9 +99,9 @@ export function EuromartHeader() {
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="상품 검색 · Search products"
+            placeholder={searchPlaceholder}
             className="h-11 rounded-full pl-10"
-            aria-label="상품 검색"
+            aria-label={searchLabel}
           />
         </div>
       </div>
