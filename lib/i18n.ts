@@ -429,6 +429,14 @@ const dict = {
     fr: "Destinataire",
     hu: "Címzett",
   },
+  recipientPlaceholder: {
+    ko: "홍길동",
+    en: "Full name",
+    de: "Vollständiger Name",
+    cs: "Celé jméno",
+    fr: "Nom complet",
+    hu: "Teljes név",
+  },
   address: {
     ko: "주소",
     en: "Address",
@@ -535,7 +543,16 @@ export function translate(
   lang: Lang,
   params?: Record<string, string | number>,
 ): string {
-  const entry = dict[key] as Entry
+  const entry = dict[key] as Entry | undefined
+
+  // 사전에 없는 키는 앱을 중단시키지 않고 키 이름을 그대로 노출합니다.
+  if (!entry) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(`[v0] 사전에 없는 번역 키: "${key}"`)
+    }
+    return key
+  }
+
   const template = entry[lang] ?? entry.en
 
   if (!params) return template

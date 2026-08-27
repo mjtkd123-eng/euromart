@@ -106,7 +106,7 @@ export function CartDrawer() {
             <div>
               <p className="text-lg font-black text-foreground">{t("orderPlaced")}</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                {t("orderPlacedHint", { store: storeName(region) })}
+                {t("preparingDelivery", { store: storeName(region) })}
               </p>
               {orderId && (
                 <p className="mt-2 text-xs text-muted-foreground">
@@ -122,7 +122,7 @@ export function CartDrawer() {
         ) : cart.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
             <ShoppingBag className="size-12 text-muted-foreground" aria-hidden="true" />
-            <p className="text-sm font-medium text-foreground">{t("cartEmpty")}</p>
+            <p className="text-sm font-medium text-foreground">{t("emptyCart")}</p>
             <Button variant="secondary" className="rounded-full" onClick={() => handleClose(false)}>
               {t("browseProducts")}
             </Button>
@@ -134,11 +134,7 @@ export function CartDrawer() {
               <p className="flex items-center gap-1.5 text-xs font-medium text-foreground">
                 <Truck className="size-4 text-primary" aria-hidden="true" />
                 {remainingForFree > 0 ? (
-                  <span>
-                    {t("addMoreForFreeDelivery", {
-                      amount: formatPrice(remainingForFree, currency),
-                    })}
-                  </span>
+                  <span>{t("addMoreForFree", { amount: formatPrice(remainingForFree, currency) })}</span>
                 ) : (
                   <span className="font-bold text-primary">{t("freeDeliveryApplied")}</span>
                 )}
@@ -194,7 +190,7 @@ export function CartDrawer() {
                     <button
                       onClick={() => removeItem(line.id)}
                       className="self-start text-muted-foreground transition-colors hover:text-destructive"
-                      aria-label={t("removeNamed", { name: productName(line) })}
+                      aria-label={t("deleteNamed", { name: productName(line) })}
                     >
                       <Trash2 className="size-4" aria-hidden="true" />
                     </button>
@@ -207,7 +203,7 @@ export function CartDrawer() {
                 <form id="checkout-form" onSubmit={handlePlaceOrder} className="mt-5 flex flex-col gap-3">
                   <p className="text-sm font-bold text-foreground">{t("deliveryInfo")}</p>
                   <div className="grid gap-1.5">
-                    <Label htmlFor="name">{t("recipientName")}</Label>
+                    <Label htmlFor="name">{t("recipient")}</Label>
                     <Input
                       id="name"
                       required
@@ -243,7 +239,7 @@ export function CartDrawer() {
                     />
                   </div>
                   <div className="grid gap-1.5">
-                    <Label htmlFor="promo">프로모션 코드 · Promo (선택)</Label>
+                    <Label htmlFor="promo">{t("promoOptional")}</Label>
                     <Input
                       id="promo"
                       placeholder="WELCOME10"
@@ -266,24 +262,24 @@ export function CartDrawer() {
             <div className="border-t border-border p-4">
               <dl className="mb-3 flex flex-col gap-1.5 text-sm">
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">상품 금액</dt>
+                  <dt className="text-muted-foreground">{t("subtotal")}</dt>
                   <dd className="font-semibold text-foreground">{formatPrice(subtotal, currency)}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">배송비</dt>
+                  <dt className="text-muted-foreground">{t("deliveryFee")}</dt>
                   <dd className="font-semibold text-foreground">
-                    {deliveryFee === 0 ? "무료" : formatPrice(deliveryFee, currency)}
+                    {deliveryFee === 0 ? t("freeLabel") : formatPrice(deliveryFee, currency)}
                   </dd>
                 </div>
                 <div className="mt-1 flex justify-between border-t border-border pt-2 text-base">
-                  <dt className="font-black text-foreground">합계</dt>
+                  <dt className="font-black text-foreground">{t("totalLabel")}</dt>
                   <dd className="font-black text-primary">{formatPrice(total, currency)}</dd>
                 </div>
               </dl>
 
               {step === "cart" ? (
                 <Button className="h-12 w-full rounded-full text-base" onClick={goToCheckout}>
-                  결제하기 · Checkout
+                  {t("checkout")}
                 </Button>
               ) : (
                 <Button
@@ -292,7 +288,9 @@ export function CartDrawer() {
                   disabled={submitting}
                   className="h-12 w-full rounded-full text-base"
                 >
-                  {submitting ? "주문 처리 중..." : `${formatPrice(total, currency)} 주문하기`}
+                  {submitting
+                    ? t("placingOrder")
+                    : t("placeOrderAmount", { amount: formatPrice(total, currency) })}
                 </Button>
               )}
             </div>
