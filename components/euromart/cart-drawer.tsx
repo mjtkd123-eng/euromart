@@ -104,26 +104,27 @@ export function CartDrawer() {
           <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
             <CheckCircle2 className="size-16 text-primary" aria-hidden="true" />
             <div>
-              <p className="text-lg font-black text-foreground">주문이 접수되었습니다!</p>
+              <p className="text-lg font-black text-foreground">{t("orderPlaced")}</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                {region.store.ko}에서 곧 배송을 준비합니다.
+                {t("orderPlacedHint", { store: storeName(region) })}
               </p>
               {orderId && (
                 <p className="mt-2 text-xs text-muted-foreground">
-                  주문번호 · <span className="font-mono font-semibold">{orderId.slice(0, 8).toUpperCase()}</span>
+                  {t("orderNumber")} ·{" "}
+                  <span className="font-mono font-semibold">{orderId.slice(0, 8).toUpperCase()}</span>
                 </p>
               )}
             </div>
             <Button className="mt-2 rounded-full" onClick={() => handleClose(false)}>
-              쇼핑 계속하기
+              {t("continueShopping")}
             </Button>
           </div>
         ) : cart.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
             <ShoppingBag className="size-12 text-muted-foreground" aria-hidden="true" />
-            <p className="text-sm font-medium text-foreground">장바구니가 비어 있습니다</p>
+            <p className="text-sm font-medium text-foreground">{t("cartEmpty")}</p>
             <Button variant="secondary" className="rounded-full" onClick={() => handleClose(false)}>
-              상품 보러가기
+              {t("browseProducts")}
             </Button>
           </div>
         ) : (
@@ -134,10 +135,12 @@ export function CartDrawer() {
                 <Truck className="size-4 text-primary" aria-hidden="true" />
                 {remainingForFree > 0 ? (
                   <span>
-                    {formatPrice(remainingForFree, currency)} 더 담으면 <b>무료배송!</b>
+                    {t("addMoreForFreeDelivery", {
+                      amount: formatPrice(remainingForFree, currency),
+                    })}
                   </span>
                 ) : (
-                  <span className="font-bold text-primary">무료배송 혜택이 적용되었습니다</span>
+                  <span className="font-bold text-primary">{t("freeDeliveryApplied")}</span>
                 )}
               </p>
               <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-border">
@@ -159,7 +162,7 @@ export function CartDrawer() {
                       className="size-16 shrink-0 rounded-lg object-cover"
                     />
                     <div className="flex min-w-0 flex-1 flex-col">
-                      <p className="truncate text-sm font-bold text-foreground">{line.nameKo}</p>
+                      <p className="truncate text-sm font-bold text-foreground">{productName(line)}</p>
                       <p className="truncate text-xs text-muted-foreground">{line.unit}</p>
                       <div className="mt-auto flex items-center justify-between gap-2">
                         <div className="flex items-center gap-1 rounded-full border border-border p-0.5">
@@ -168,7 +171,7 @@ export function CartDrawer() {
                             variant="ghost"
                             className="size-6 rounded-full"
                             onClick={() => setQuantity(line.id, line.quantity - 1)}
-                            aria-label="수량 줄이기"
+                            aria-label={t("decreaseQty")}
                           >
                             <Minus className="size-3" aria-hidden="true" />
                           </Button>
@@ -178,7 +181,7 @@ export function CartDrawer() {
                             variant="ghost"
                             className="size-6 rounded-full"
                             onClick={() => setQuantity(line.id, line.quantity + 1)}
-                            aria-label="수량 늘리기"
+                            aria-label={t("increaseQty")}
                           >
                             <Plus className="size-3" aria-hidden="true" />
                           </Button>
@@ -191,7 +194,7 @@ export function CartDrawer() {
                     <button
                       onClick={() => removeItem(line.id)}
                       className="self-start text-muted-foreground transition-colors hover:text-destructive"
-                      aria-label={`${line.nameKo} 삭제`}
+                      aria-label={t("removeNamed", { name: productName(line) })}
                     >
                       <Trash2 className="size-4" aria-hidden="true" />
                     </button>
@@ -202,20 +205,22 @@ export function CartDrawer() {
               {/* 결제 폼 */}
               {step === "checkout" && (
                 <form id="checkout-form" onSubmit={handlePlaceOrder} className="mt-5 flex flex-col gap-3">
-                  <p className="text-sm font-bold text-foreground">배송 정보</p>
+                  <p className="text-sm font-bold text-foreground">{t("deliveryInfo")}</p>
                   <div className="grid gap-1.5">
-                    <Label htmlFor="name">받는 분 · Name</Label>
+                    <Label htmlFor="name">{t("recipientName")}</Label>
                     <Input
                       id="name"
                       required
-                      placeholder="홍길동"
+                      placeholder={t("recipientPlaceholder")}
                       className="h-11"
                       value={form.name}
                       onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                     />
                   </div>
                   <div className="grid gap-1.5">
-                    <Label htmlFor="address">주소 · Address ({region.city})</Label>
+                    <Label htmlFor="address">
+                      {t("address")} ({region.city})
+                    </Label>
                     <Input
                       id="address"
                       required
@@ -226,7 +231,7 @@ export function CartDrawer() {
                     />
                   </div>
                   <div className="grid gap-1.5">
-                    <Label htmlFor="phone">연락처 · Phone</Label>
+                    <Label htmlFor="phone">{t("phone")}</Label>
                     <Input
                       id="phone"
                       required
