@@ -16,7 +16,7 @@ interface CountryGroup {
  * 한국 식료품점 목록에서 매장을 고릅니다.
  */
 export function StoreLocator() {
-  const { regions, region, regionId, setRegionId, t, storeName } = useEuromart()
+  const { regions, region, regionId, setRegionId, t, storeName, cityName } = useEuromart()
   const [open, setOpen] = useState(false)
   // null이면 국가 목록을, 값이 있으면 해당 국가의 매장 목록을 보여줍니다.
   const [country, setCountry] = useState<string | null>(null)
@@ -75,7 +75,7 @@ export function StoreLocator() {
       >
         <MapPin className="size-4 shrink-0 text-primary" aria-hidden="true" />
         <span className="flex min-w-0 flex-col leading-tight">
-          <span className="truncate text-sm font-bold text-foreground">{region.city}</span>
+          <span className="truncate text-sm font-bold text-foreground">{cityName(region)}</span>
           <span className="truncate text-[11px] text-muted-foreground">{region.country}</span>
         </span>
         <ChevronDown
@@ -150,7 +150,7 @@ export function StoreLocator() {
                         <span className="flex min-w-0 flex-1 flex-col leading-tight">
                           <span className="truncate text-sm font-semibold text-foreground">{storeName(r)}</span>
                           <span className="truncate text-xs text-muted-foreground">
-                            {r.city} · {r.currency.code}
+                            {cityName(r)} · {r.currency.code}
                           </span>
                         </span>
                         {selected && <Check className="size-4 shrink-0 text-primary" aria-hidden="true" />}

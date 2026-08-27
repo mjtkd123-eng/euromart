@@ -6,27 +6,40 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { AuthShell } from "@/components/auth/auth-shell"
+import { useDetectedLang } from "@/lib/use-detected-lang"
+import type { Lang } from "@/lib/i18n"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
-function signUpErrorMessage(error: unknown): string {
+function signUpErrorMessage(error: unknown, lang: Lang): string {
   const { code, status } = (error ?? {}) as { code?: string; status?: number }
-  if (code === "weak_password") return "더 강력한 비밀번호를 선택해 주세요."
+  const ko = lang === "ko"
+
+  if (code === "weak_password") {
+    return ko ? "더 강력한 비밀번호를 선택해 주세요." : "Please choose a stronger password."
+  }
   if (code === "email_address_invalid") {
-    return "실제 이메일 주소를 사용해 주세요. (example/test 도메인은 지원되지 않습니다)"
+    return ko
+      ? "실제 이메일 주소를 사용해 주세요. (example/test 도메인은 지원되지 않습니다)"
+      : "Please use a real email address — example/test domains are not supported."
   }
   if (code === "email_address_not_authorized") {
-    return "해당 주소로는 인증 메일을 보낼 수 없습니다. 다른 주소를 사용해 주세요."
+    return ko
+      ? "해당 주소로는 인증 메일을 보낼 수 없습니다. 다른 주소를 사용해 주세요."
+      : "We cannot send a verification email to that address. Please try another one."
   }
-  if (code === "validation_failed") return "입력하신 정보를 확인해 주세요."
+  if (code === "validation_failed") {
+    return ko ? "입력하신 정보를 확인해 주세요." : "Please check the details you entered."
+  }
   if (code === "over_email_send_rate_limit" || status === 429) {
-    return "시도가 너무 많습니다. 잠시 후 다시 시도해 주세요."
+    return ko ? "시도가 너무 많습니다. 잠시 후 다시 시도해 주세요." : "Too many attempts. Please try again shortly."
   }
-  return "회원가입을 완료할 수 없습니다. 다시 시도해 주세요."
+  return ko ? "회원가입을 완료할 수 없습니다. 다시 시도해 주세요." : "We could not complete your sign-up. Please try again."
 }
 
 export default function SignUpPage() {
+  const { lang, t } = useDetectedLang()
   const [fullName, setFullName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -42,7 +55,7 @@ export default function SignUpPage() {
     setError(null)
 
     if (password !== repeatPassword) {
-      setError("비밀번호가 일치하지 않습니다.")
+      setError(t("passwordMismatch"))
       setIsLoading(false)
       return
     }
@@ -61,28 +74,28 @@ export default function SignUpPage() {
       router.push("/auth/sign-up-success")
     } catch (error: unknown) {
       console.error("[v0] Sign-up error:", error)
-      setError(signUpErrorMessage(error))
+      setError(signUpErrorMessage(error, lang))
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <AuthShell title="회원가입" subtitle="새 계정을 만들어 유럽 어디서나 한국 식료품을 주문하세요">
+    <AuthShell title={t("signUpTitle")} subtitle={t("signUpSubtitle")}>
       <form onSubmit={handleSignUp} className="flex flex-col gap-5">
         <div className="grid gap-2">
-          <Label htmlFor="fullName">이름 · Name</Label>
+          <Label htmlFor="fullName">{t("nameLabel")}</Label>
           <Input
             id="fullName"
             required
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            placeholder="홍길동"
+            placeholder={lang === "ko" ? "홍길동" : "Jane Doe"}
             className="h-11"
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="email">이메일 · Email</Label>
+          <Label htmlFor="email">{t("emailLabel")}</Label>
           <Input
             id="email"
             type="email"
@@ -94,7 +107,7 @@ export default function SignUpPage() {
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="password">비밀번호 · Password</Label>
+          <Label htmlFor="password">{t("passwordLabel")}</Label>
           <Input
             id="password"
             type="password"
@@ -105,7 +118,7 @@ export default function SignUpPage() {
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="repeat-password">비밀번호 확인 · Repeat</Label>
+          <Label htmlFor="repeat-password">{t("repeatPasswordLabel")}</Label>
           <Input
             id="repeat-password"
             type="password"
@@ -117,13 +130,13 @@ export default function SignUpPage() {
         </div>
         {error && <p className="text-sm text-destructive">{error}</p>}
         <Button type="submit" className="h-11 w-full rounded-full text-base" disabled={isLoading}>
-          {isLoading ? "계정 생성 중..." : "회원가입"}
+          {isLoading ? t("creatingAccount") : t("signUpTitle")}
         </Button>
       </form>
       <p className="mt-5 text-center text-sm text-muted-foreground">
-        이미 계정이 있으신가요?{" "}
+        {t("alreadyMember")}{" "}
         <Link href="/auth/login" className="font-semibold text-primary underline-offset-4 hover:underline">
-          로그인
+          {t("loginTitle")}
         </Link>
       </p>
     </AuthShell>

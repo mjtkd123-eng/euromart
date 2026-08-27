@@ -4,7 +4,7 @@ import { ShoppingBag, MapPin } from "lucide-react"
 import { useEuromart } from "@/lib/euromart-context"
 
 export function EuromartFooter() {
-  const { regions, regionId, setRegionId, t } = useEuromart()
+  const { regions, regionId, setRegionId, t, cityName } = useEuromart()
 
   return (
     <footer className="border-t border-border bg-card">
@@ -34,7 +34,7 @@ export function EuromartFooter() {
                     : "border-border text-muted-foreground hover:bg-muted"
                 }`}
               >
-                {r.city}
+                {cityName(r)}
                 <span className="ml-1.5 text-xs opacity-70">{r.countryCode}</span>
               </button>
             ))}

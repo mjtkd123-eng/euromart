@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import { getRegion, getRegionProducts, type Region, type ResolvedProduct } from "./storesData"
 import type { FxRateMap } from "./fx-shared"
 import {
+  cityName as localizedCityName,
   detectLocale,
   localLangFor,
   resolveLang,
@@ -58,6 +59,12 @@ interface EuromartContextValue {
   productName: (product: { nameKo: string; nameEn: string }) => string
   /** 매장명을 현재 언어로 */
   storeName: (region: Region) => string
+  /** 도시명을 현재 언어로 — 예) "Budapest" → "부다페스트" */
+  cityName: (region: Region) => string
+
+  /* 인증 안내 모달 */
+  authPromptOpen: boolean
+  setAuthPromptOpen: (open: boolean) => void
 
   /* 상품 / 필터 */
   products: ResolvedProduct[]
@@ -114,6 +121,7 @@ export function EuromartProvider({
   // 서버 렌더 시점에는 접속 환경을 알 수 없으므로 "en"으로 시작하고,
   // 마운트 후 저장된 선택 또는 접속 환경 감지 결과로 교체합니다.
   const [locale, setLocale] = useState<Locale>("en")
+  const [authPromptOpen, setAuthPromptOpen] = useState(false)
 
   // localStorage 복원
   useEffect(() => {
@@ -169,6 +177,7 @@ export function EuromartProvider({
     const productName = (product: { nameKo: string; nameEn: string }) =>
       lang === "ko" ? product.nameKo : product.nameEn
     const storeName = (r: Region) => (lang === "ko" ? r.store.ko : r.store.en)
+    const cityName = (r: Region) => localizedCityName(r.id, r.city, lang)
 
     const q = searchQuery.trim().toLowerCase()
     const filteredProducts = products.filter((p) => {
@@ -243,6 +252,9 @@ export function EuromartProvider({
       t,
       productName,
       storeName,
+      cityName,
+      authPromptOpen,
+      setAuthPromptOpen,
       products,
       filteredProducts,
       activeCategory,
@@ -264,7 +276,18 @@ export function EuromartProvider({
       setCartOpen,
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [regions, regionId, carts, activeCategory, searchQuery, cartOpen, user, fxRates, locale])
+  }, [
+    regions,
+    regionId,
+    carts,
+    activeCategory,
+    searchQuery,
+    cartOpen,
+    user,
+    fxRates,
+    locale,
+    authPromptOpen,
+  ])
 
   return <EuromartContext.Provider value={value}>{children}</EuromartContext.Provider>
 }

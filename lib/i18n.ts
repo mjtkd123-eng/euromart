@@ -512,6 +512,225 @@ const dict = {
   deleteNamed: { ko: "{name} 삭제", en: "Remove {name}" },
   orderFailed: { ko: "주문에 실패했습니다.", en: "Could not place the order." },
 
+  /* --- 도시명 --- */
+  /**
+   * 도시명은 언어별 표기가 다르므로 사전에서 관리합니다.
+   * (DB의 `city` 컬럼은 라틴 표기 하나만 저장합니다.)
+   * 새 매장을 추가하면 `city.<region id>` 키를 함께 등록하세요.
+   */
+  "city.vienna": { ko: "비엔나", en: "Vienna", de: "Wien", cs: "Vídeň", fr: "Vienne", hu: "Bécs" },
+  "city.prague": { ko: "프라하", en: "Prague", de: "Prag", cs: "Praha", fr: "Prague", hu: "Prága" },
+  "city.paris": { ko: "파리", en: "Paris", de: "Paris", cs: "Paříž", fr: "Paris", hu: "Párizs" },
+  "city.berlin": { ko: "베를린", en: "Berlin", de: "Berlin", cs: "Berlín", fr: "Berlin", hu: "Berlin" },
+  "city.budapest": {
+    ko: "부다페스트",
+    en: "Budapest",
+    de: "Budapest",
+    cs: "Budapešť",
+    fr: "Budapest",
+    hu: "Budapest",
+  },
+
+  /* --- 히어로 배너 --- */
+  heroTitle: {
+    ko: "유럽 속 한국의 맛, {city}",
+    en: "Taste of Korea in Europe, {city}",
+    de: "Koreas Geschmack in Europa, {city}",
+    cs: "Chuť Koreje v Evropě, {city}",
+    fr: "Le goût de la Corée en Europe, {city}",
+    hu: "Korea íze Európában, {city}",
+  },
+  heroSubtitle: {
+    ko: "{store}에서 신선한 한국 식료품을 현지 통화로 간편하게 주문하세요.",
+    en: "Order fresh Korean groceries from {store}, priced in your local currency.",
+    de: "Frische koreanische Lebensmittel von {store} — in Ihrer Landeswährung.",
+    cs: "Čerstvé korejské potraviny z {store} — v místní valutě.",
+    fr: "Des produits coréens frais de {store}, dans votre devise locale.",
+    hu: "Friss koreai élelmiszer a(z) {store} kínálatából, helyi valutában.",
+  },
+
+  /* --- 로그인 / 회원가입 모달 --- */
+  signInOrRegister: {
+    ko: "로그인 / 회원가입",
+    en: "Sign In / Register",
+    de: "Anmelden / Registrieren",
+    cs: "Přihlásit se / Registrovat",
+    fr: "Connexion / Inscription",
+    hu: "Bejelentkezés / Regisztráció",
+  },
+  authModalTitle: {
+    ko: "{store} 계정으로 더 편하게",
+    en: "Get more from {store}",
+    de: "Mehr aus {store} machen",
+    cs: "Získejte více z {store}",
+    fr: "Profitez pleinement de {store}",
+    hu: "Hozza ki a legtöbbet a(z) {store}-ból",
+  },
+  authModalSubtitle: {
+    ko: "계정을 만들면 주문 내역과 배송 정보를 저장하고, 장바구니를 어디서나 이어서 사용할 수 있습니다.",
+    en: "Create an account to save your orders and delivery details, and pick up your cart on any device.",
+    de: "Erstellen Sie ein Konto, um Bestellungen und Lieferdaten zu speichern und Ihren Warenkorb überall fortzusetzen.",
+    cs: "Vytvořte si účet, uložte si objednávky a doručovací údaje a pokračujte v košíku na jakémkoli zařízení.",
+    fr: "Créez un compte pour enregistrer vos commandes et vos adresses, et retrouver votre panier partout.",
+    hu: "Hozzon létre fiókot, hogy elmentse rendeléseit és szállítási adatait, és bárhol folytathassa a kosarát.",
+  },
+  authPerkOrders: {
+    ko: "주문 내역과 재주문",
+    en: "Order history & one-tap reorder",
+    de: "Bestellverlauf & Nachbestellung",
+    cs: "Historie objednávek a opakování",
+    fr: "Historique et recommande rapide",
+    hu: "Rendelési előzmények és újrarendelés",
+  },
+  authPerkAddress: {
+    ko: "배송지 저장으로 빠른 결제",
+    en: "Saved addresses for faster checkout",
+    de: "Gespeicherte Adressen für schnelleres Bezahlen",
+    cs: "Uložené adresy pro rychlejší platbu",
+    fr: "Adresses enregistrées pour payer plus vite",
+    hu: "Mentett címek a gyorsabb fizetéshez",
+  },
+  authPerkCart: {
+    ko: "모든 기기에서 장바구니 동기화",
+    en: "Your cart synced across devices",
+    de: "Warenkorb auf allen Geräten",
+    cs: "Košík na všech zařízeních",
+    fr: "Panier synchronisé sur tous vos appareils",
+    hu: "Kosár minden eszközön",
+  },
+  createAccount: {
+    ko: "무료로 회원가입",
+    en: "Create a free account",
+    de: "Kostenloses Konto erstellen",
+    cs: "Vytvořit účet zdarma",
+    fr: "Créer un compte gratuit",
+    hu: "Ingyenes fiók létrehozása",
+  },
+  alreadyMember: {
+    ko: "이미 계정이 있으신가요?",
+    en: "Already have an account?",
+    de: "Sie haben bereits ein Konto?",
+    cs: "Už máte účet?",
+    fr: "Vous avez déjà un compte ?",
+    hu: "Már van fiókja?",
+  },
+  continueAsGuest: {
+    ko: "비회원으로 계속 둘러보기",
+    en: "Continue browsing as a guest",
+    de: "Als Gast weiterstöbern",
+    cs: "Pokračovat jako návštěvník",
+    fr: "Continuer en tant qu'invité",
+    hu: "Folytatás vendégként",
+  },
+  closeDialog: {
+    ko: "닫기",
+    en: "Close",
+    de: "Schließen",
+    cs: "Zavřít",
+    fr: "Fermer",
+    hu: "Bezárás",
+  },
+
+  /* --- 인증 페이지 --- */
+  loginTitle: {
+    ko: "로그인",
+    en: "Sign in",
+    de: "Anmelden",
+    cs: "Přihlášení",
+    fr: "Connexion",
+    hu: "Bejelentkezés",
+  },
+  loginSubtitle: {
+    ko: "계정에 로그인하여 주문을 이어가세요.",
+    en: "Sign in to continue your order.",
+    de: "Melden Sie sich an, um fortzufahren.",
+    cs: "Přihlaste se a pokračujte v objednávce.",
+    fr: "Connectez-vous pour continuer votre commande.",
+    hu: "Jelentkezzen be a rendelés folytatásához.",
+  },
+  signUpTitle: {
+    ko: "회원가입",
+    en: "Create account",
+    de: "Konto erstellen",
+    cs: "Registrace",
+    fr: "Créer un compte",
+    hu: "Regisztráció",
+  },
+  signUpSubtitle: {
+    ko: "새 계정을 만들어 유럽 어디서나 한국 식료품을 주문하세요.",
+    en: "Create an account to order Korean groceries anywhere in Europe.",
+    de: "Erstellen Sie ein Konto und bestellen Sie koreanische Lebensmittel europaweit.",
+    cs: "Vytvořte si účet a objednávejte korejské potraviny po celé Evropě.",
+    fr: "Créez un compte pour commander des produits coréens partout en Europe.",
+    hu: "Hozzon létre fiókot, és rendeljen koreai élelmiszert Európa bármely pontján.",
+  },
+  emailLabel: { ko: "이메일", en: "Email", de: "E-Mail", cs: "E-mail", fr: "E-mail", hu: "E-mail" },
+  passwordLabel: {
+    ko: "비밀번호",
+    en: "Password",
+    de: "Passwort",
+    cs: "Heslo",
+    fr: "Mot de passe",
+    hu: "Jelszó",
+  },
+  repeatPasswordLabel: {
+    ko: "비밀번호 확인",
+    en: "Repeat password",
+    de: "Passwort wiederholen",
+    cs: "Heslo znovu",
+    fr: "Confirmer le mot de passe",
+    hu: "Jelszó megerősítése",
+  },
+  nameLabel: { ko: "이름", en: "Name", de: "Name", cs: "Jméno", fr: "Nom", hu: "Név" },
+  signingIn: {
+    ko: "로그인 중...",
+    en: "Signing in...",
+    de: "Anmeldung...",
+    cs: "Přihlašování...",
+    fr: "Connexion...",
+    hu: "Bejelentkezés...",
+  },
+  creatingAccount: {
+    ko: "계정 생성 중...",
+    en: "Creating account...",
+    de: "Konto wird erstellt...",
+    cs: "Vytváření účtu...",
+    fr: "Création du compte...",
+    hu: "Fiók létrehozása...",
+  },
+  noAccountYet: {
+    ko: "계정이 없으신가요?",
+    en: "Don't have an account?",
+    de: "Noch kein Konto?",
+    cs: "Nemáte účet?",
+    fr: "Vous n'avez pas de compte ?",
+    hu: "Még nincs fiókja?",
+  },
+  signUpAction: {
+    ko: "회원가입",
+    en: "Sign up",
+    de: "Registrieren",
+    cs: "Registrovat",
+    fr: "S'inscrire",
+    hu: "Regisztráció",
+  },
+  homeLink: {
+    ko: "K-EuroMart 홈으로",
+    en: "Back to K-EuroMart home",
+    de: "Zur K-EuroMart Startseite",
+    cs: "Na domovskou stránku K-EuroMart",
+    fr: "Retour à l'accueil K-EuroMart",
+    hu: "Vissza a K-EuroMart főoldalára",
+  },
+  passwordMismatch: {
+    ko: "비밀번호가 일치하지 않습니다.",
+    en: "Passwords do not match.",
+    de: "Passwörter stimmen nicht überein.",
+    cs: "Hesla se neshodují.",
+    fr: "Les mots de passe ne correspondent pas.",
+    hu: "A jelszavak nem egyeznek.",
+  },
+
   /* --- 푸터 --- */
   ourStores: {
     ko: "매장 위치",
@@ -559,6 +778,16 @@ export function translate(
   return template.replace(/\{(\w+)\}/g, (match, name: string) =>
     name in params ? String(params[name]) : match,
   )
+}
+
+/**
+ * 도시명을 현재 언어로 표기합니다.
+ * 사전에 등록되지 않은 도시는 DB의 라틴 표기를 그대로 사용합니다.
+ */
+export function cityName(regionId: string, fallback: string, lang: Lang): string {
+  const key = `city.${regionId}`
+  if (!(key in dict)) return fallback
+  return translate(key as TransKey, lang)
 }
 
 /**

@@ -4,12 +4,11 @@ import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { User, LogOut, LayoutDashboard, ShieldCheck } from "lucide-react"
 import { useEuromart } from "@/lib/euromart-context"
-import { Button, buttonVariants } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 import { signOut } from "@/app/actions/auth"
 
 export function AccountMenu() {
-  const { user, t } = useEuromart()
+  const { user, t, setAuthPromptOpen } = useEuromart()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -22,14 +21,17 @@ export function AccountMenu() {
   }, [])
 
   if (!user) {
+    // 미로그인 상태에서는 바로 이동하지 않고 가입을 권하는 안내 모달을 띄웁니다.
     return (
-      <Link
-        href="/auth/login"
-        className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-full")}
+      <Button
+        variant="outline"
+        size="sm"
+        className="rounded-full"
+        onClick={() => setAuthPromptOpen(true)}
       >
         <User className="size-4" aria-hidden="true" />
-        <span className="hidden sm:inline">{t("login")}</span>
-      </Link>
+        <span className="hidden sm:inline">{t("signInOrRegister")}</span>
+      </Button>
     )
   }
 

@@ -5,11 +5,13 @@ import { useEuromart } from "@/lib/euromart-context"
 import { formatPrice } from "@/lib/storesData"
 
 export function EuromartHero() {
-  const { region, lang, t, storeName } = useEuromart()
+  const { region, t, storeName, cityName } = useEuromart()
 
-  // 히어로 문구는 ko/en만 준비되어 있어 현지 언어에서는 영어를 사용합니다.
-  const title = lang === "ko" ? region.hero.title.ko : region.hero.title.en
-  const subtitle = lang === "ko" ? region.hero.subtitle.ko : region.hero.subtitle.en
+  // 배너 문구는 접속 환경/선택 언어와 현재 매장 도시에 따라 매번 새로 조립됩니다.
+  // 예) 한국어 + 부다페스트 → "유럽 속 한국의 맛, 부다페스트"
+  //     영어 + 부다페스트 → "Taste of Korea in Europe, Budapest"
+  const title = t("heroTitle", { city: cityName(region) })
+  const subtitle = t("heroSubtitle", { store: storeName(region) })
 
   return (
     <section className="mx-auto max-w-6xl px-4 pt-6">

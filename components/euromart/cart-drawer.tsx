@@ -31,6 +31,7 @@ export function CartDrawer() {
     t,
     productName,
     storeName,
+    cityName,
   } = useEuromart()
   const [step, setStep] = useState<Step>("cart")
   const [form, setForm] = useState({ name: "", address: "", phone: "", promo: "" })
@@ -95,7 +96,7 @@ export function CartDrawer() {
             {step === "done" && t("orderComplete")}
           </SheetTitle>
           <SheetDescription>
-            {storeName(region)} · {region.city} · {currency.code}
+            {storeName(region)} · {cityName(region)} · {currency.code}
           </SheetDescription>
         </SheetHeader>
 
@@ -215,12 +216,12 @@ export function CartDrawer() {
                   </div>
                   <div className="grid gap-1.5">
                     <Label htmlFor="address">
-                      {t("address")} ({region.city})
+                      {t("address")} ({cityName(region)})
                     </Label>
                     <Input
                       id="address"
                       required
-                      placeholder={`${region.city}, ${region.country}`}
+                      placeholder={`${cityName(region)}, ${region.country}`}
                       className="h-11"
                       value={form.address}
                       onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}

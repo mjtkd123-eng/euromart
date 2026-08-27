@@ -12,7 +12,7 @@ export function AuthShell({
 }) {
   return (
     <div className="flex min-h-svh w-full flex-col items-center justify-center gap-6 bg-muted/40 p-6 md:p-10">
-      <Link href="/" className="flex items-center gap-2.5" aria-label="K-EuroMart 홈으로">
+      <Link href="/" className="flex items-center gap-2.5" aria-label="K-EuroMart">
         <span className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
           <ShoppingBag className="size-5" aria-hidden="true" />
         </span>

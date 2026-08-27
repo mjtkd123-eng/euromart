@@ -7,7 +7,7 @@ import type { TransKey } from "@/lib/i18n"
 import { ProductCard } from "./product-card"
 
 export function ProductGrid() {
-  const { region, filteredProducts, activeCategory, searchQuery, t } = useEuromart()
+  const { region, filteredProducts, activeCategory, searchQuery, t, cityName } = useEuromart()
 
   const activeCategoryExists =
     activeCategory !== null && categories.some((c) => c.id === activeCategory)
@@ -19,7 +19,7 @@ export function ProductGrid() {
         ? t(`cat.${activeCategory}` as TransKey)
         : activeCategory
           ? t("products")
-          : t("storeProducts", { city: region.city })
+          : t("storeProducts", { city: cityName(region) })
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-6">
