@@ -24,10 +24,10 @@ export function EuromartHero() {
             {region.store.ko} · {region.store.en}
           </span>
 
-          <h1 className="max-w-xl text-balance text-3xl font-black leading-tight text-background sm:text-4xl lg:text-5xl">
+          <h1 className="max-w-xl break-keep text-balance text-3xl font-black leading-tight text-background sm:text-4xl lg:text-5xl">
             {region.hero.title.ko}
           </h1>
-          <p className="max-w-lg text-pretty text-sm text-background/85 sm:text-base">
+          <p className="max-w-lg break-keep text-pretty text-sm text-background/85 sm:text-base">
             {region.hero.title.en} — {region.hero.subtitle.ko}
           </p>
 

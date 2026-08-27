@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { User, LogOut, LayoutDashboard, ShieldCheck } from "lucide-react"
 import { useEuromart } from "@/lib/euromart-context"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import { signOut } from "@/app/actions/auth"
 
 export function AccountMenu() {
@@ -22,12 +23,13 @@ export function AccountMenu() {
 
   if (!user) {
     return (
-      <Button asChild variant="outline" size="sm" className="rounded-full">
-        <Link href="/auth/login">
-          <User className="size-4" aria-hidden="true" />
-          <span className="hidden sm:inline">로그인</span>
-        </Link>
-      </Button>
+      <Link
+        href="/auth/login"
+        className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-full")}
+      >
+        <User className="size-4" aria-hidden="true" />
+        <span className="hidden sm:inline">로그인</span>
+      </Link>
     )
   }
 
