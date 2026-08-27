@@ -12,60 +12,38 @@ const admin = createClient(url, serviceKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 })
 
+const PASSWORD = "EuroMart!2026"
+
+// Vendor scoping lives on regions.vendor_id — profiles has no region column.
 const users = [
-  {
-    email: "admin@keuromart.com",
-    password: "EuroMart!2026",
-    fullName: "본사 관리자",
-    role: "admin",
-    regionId: null,
-  },
-  {
-    email: "budapest@keuromart.com",
-    password: "EuroMart!2026",
-    fullName: "부다페스트 점주",
-    role: "vendor",
-    regionId: "budapest",
-  },
-  {
-    email: "berlin@kueromart.com".replace("kueromart", "keuromart"),
-    password: "EuroMart!2026",
-    fullName: "베를린 점주",
-    role: "vendor",
-    regionId: "berlin",
-  },
-  {
-    email: "customer@keuromart.com",
-    password: "EuroMart!2026",
-    fullName: "김손님",
-    role: "customer",
-    regionId: null,
-  },
+  { email: "admin@keuromart.com", fullName: "본사 관리자", role: "admin", regionId: null },
+  { email: "budapest@keuromart.com", fullName: "부다페스트 점주", role: "vendor", regionId: "budapest" },
+  { email: "berlin@keuromart.com", fullName: "베를린 점주", role: "vendor", regionId: "berlin" },
+  { email: "customer@keuromart.com", fullName: "김손님", role: "customer", regionId: null },
 ]
 
-for (const u of users) {
-  // Find existing user by email
-  const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 })
-  const existing = list?.users?.find((x) => x.email === u.email)
+const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 })
 
+for (const u of users) {
+  const existing = list?.users?.find((x) => x.email === u.email)
   let userId = existing?.id
 
   if (!userId) {
     const { data, error } = await admin.auth.admin.createUser({
       email: u.email,
-      password: u.password,
+      password: PASSWORD,
       email_confirm: true,
       user_metadata: { full_name: u.fullName },
     })
     if (error) {
-      console.error(`[create failed] ${u.email}:`, error.message)
+      console.error(`[create failed] ${u.email}: ${error.message}`)
       continue
     }
     userId = data.user.id
     console.log(`[created] ${u.email}`)
   } else {
     await admin.auth.admin.updateUserById(userId, {
-      password: u.password,
+      password: PASSWORD,
       email_confirm: true,
       user_metadata: { full_name: u.fullName },
     })
@@ -74,21 +52,32 @@ for (const u of users) {
 
   const { error: pErr } = await admin
     .from("profiles")
-    .upsert(
-      {
-        id: userId,
-        email: u.email,
-        full_name: u.fullName,
-        role: u.role,
-        region_id: u.regionId,
-      },
-      { onConflict: "id" },
-    )
+    .upsert({ id: userId, email: u.email, full_name: u.fullName, role: u.role }, { onConflict: "id" })
 
-  if (pErr) console.error(`[profile failed] ${u.email}:`, pErr.message)
-  else console.log(`  -> profile: role=${u.role} region=${u.regionId ?? "-"}`)
+  if (pErr) {
+    console.error(`  -> profile failed: ${pErr.message}`)
+    continue
+  }
+
+  if (u.regionId) {
+    const { error: rErr } = await admin.from("regions").update({ vendor_id: userId }).eq("id", u.regionId)
+    if (rErr) console.error(`  -> region link failed: ${rErr.message}`)
+    else console.log(`  -> role=${u.role}, owns region "${u.regionId}"`)
+  } else {
+    console.log(`  -> role=${u.role}`)
+  }
 }
 
-const { data: profiles } = await admin.from("profiles").select("email, role, region_id").order("role")
-console.log("\nProfiles now:")
-console.table(profiles)
+const { data: rows } = await admin
+  .from("profiles")
+  .select("email, role, regions(id, city)")
+  .order("role")
+
+console.log("\nAccounts (password for all: " + PASSWORD + ")")
+console.table(
+  (rows ?? []).map((r) => ({
+    email: r.email,
+    role: r.role,
+    region: r.regions?.[0]?.city ?? "-",
+  })),
+)
