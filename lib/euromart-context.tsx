@@ -93,6 +93,11 @@ interface EuromartContextValue {
   /* 드로어 */
   cartOpen: boolean
   setCartOpen: (open: boolean) => void
+
+  /* 상품 상세 오버레이 */
+  detailProduct: ResolvedProduct | null
+  openProductDetail: (productId: string) => void
+  closeProductDetail: () => void
 }
 
 const EuromartContext = createContext<EuromartContextValue | null>(null)
@@ -120,6 +125,7 @@ export function EuromartProvider({
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [cartOpen, setCartOpen] = useState(false)
+  const [detailProductId, setDetailProductId] = useState<string | null>(null)
   const [hydrated, setHydrated] = useState(false)
   // 서버 렌더 시점에는 접속 환경을 알 수 없으므로 "en"으로 시작하고,
   // 마운트 후 저장된 선택 또는 접속 환경 감지 결과로 교체합니다.
@@ -242,6 +248,20 @@ export function EuromartProvider({
       setCarts((prev) => ({ ...prev, [region.id]: [] }))
     }
 
+    // 상세 오버레이 대상 — 현재 지역 상품 목록에서 찾습니다.
+    // 지역이 바뀌어 해당 상품이 없으면 자연스럽게 null이 됩니다.
+    const detailProduct = detailProductId
+      ? (products.find((p) => p.id === detailProductId) ?? null)
+      : null
+
+    function openProductDetail(productId: string) {
+      setDetailProductId(productId)
+    }
+
+    function closeProductDetail() {
+      setDetailProductId(null)
+    }
+
     return {
       user,
       regions,
@@ -280,6 +300,9 @@ export function EuromartProvider({
       clearCart,
       cartOpen,
       setCartOpen,
+      detailProduct,
+      openProductDetail,
+      closeProductDetail,
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -294,6 +317,7 @@ export function EuromartProvider({
     locale,
     authPromptOpen,
     signUpOpen,
+    detailProductId,
   ])
 
   return <EuromartContext.Provider value={value}>{children}</EuromartContext.Provider>

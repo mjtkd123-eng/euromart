@@ -7,7 +7,8 @@ import { FX_BASE, formatConverted } from "@/lib/fx-shared"
 import { Button } from "@/components/ui/button"
 
 export function ProductCard({ product }: { product: ResolvedProduct }) {
-  const { region, addItem, setQuantity, getQuantity, fxRates, lang, t, productName } = useEuromart()
+  const { region, addItem, setQuantity, getQuantity, fxRates, lang, t, productName, openProductDetail } =
+    useEuromart()
   const qty = getQuantity(product.id)
   const primaryName = productName(product)
   // 보조 표기 — 한국어 화면에서는 영문명을, 그 외에는 한글 원명을 함께 보여줍니다.
@@ -17,7 +18,12 @@ export function ProductCard({ product }: { product: ResolvedProduct }) {
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-shadow hover:shadow-md">
-      <div className="relative aspect-square overflow-hidden bg-muted">
+      <button
+        type="button"
+        onClick={() => openProductDetail(product.id)}
+        className="relative aspect-square overflow-hidden bg-muted text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        aria-label={t("viewDetail") + ": " + primaryName}
+      >
         <img
           src={product.image || "/placeholder.svg"}
           alt={product.nameEn}
@@ -35,11 +41,19 @@ export function ProductCard({ product }: { product: ResolvedProduct }) {
             </span>
           </div>
         )}
-      </div>
+      </button>
 
       <div className="flex flex-1 flex-col gap-1 p-3">
         <span className="text-[11px] font-medium text-muted-foreground">{product.brand}</span>
-        <h3 className="text-pretty text-sm font-bold leading-snug text-foreground">{primaryName}</h3>
+        <button
+          type="button"
+          onClick={() => openProductDetail(product.id)}
+          className="text-left outline-none focus-visible:underline"
+        >
+          <h3 className="text-pretty text-sm font-bold leading-snug text-foreground hover:text-primary">
+            {primaryName}
+          </h3>
+        </button>
         <p className="text-xs text-muted-foreground">{secondaryName}</p>
         <p className="text-[11px] text-muted-foreground">{product.unit}</p>
 
