@@ -65,6 +65,9 @@ interface EuromartContextValue {
   /* 인증 안내 모달 */
   authPromptOpen: boolean
   setAuthPromptOpen: (open: boolean) => void
+  /* 회원가입 모달 (GDPR 약관 동의 포함) */
+  signUpOpen: boolean
+  setSignUpOpen: (open: boolean) => void
 
   /* 상품 / 필터 */
   products: ResolvedProduct[]
@@ -122,6 +125,7 @@ export function EuromartProvider({
   // 마운트 후 저장된 선택 또는 접속 환경 감지 결과로 교체합니다.
   const [locale, setLocale] = useState<Locale>("en")
   const [authPromptOpen, setAuthPromptOpen] = useState(false)
+  const [signUpOpen, setSignUpOpen] = useState(false)
 
   // localStorage 복원
   useEffect(() => {
@@ -255,6 +259,8 @@ export function EuromartProvider({
       cityName,
       authPromptOpen,
       setAuthPromptOpen,
+      signUpOpen,
+      setSignUpOpen,
       products,
       filteredProducts,
       activeCategory,
@@ -287,6 +293,7 @@ export function EuromartProvider({
     fxRates,
     locale,
     authPromptOpen,
+    signUpOpen,
   ])
 
   return <EuromartContext.Provider value={value}>{children}</EuromartContext.Provider>

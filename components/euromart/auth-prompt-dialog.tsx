@@ -3,8 +3,7 @@
 import Link from "next/link"
 import { ClipboardList, MapPin, ShoppingBag, UserPlus } from "lucide-react"
 import { useEuromart } from "@/lib/euromart-context"
-import { Button, buttonVariants } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -19,7 +18,7 @@ import {
  * 회원가입을 주요 동작으로 제시합니다.
  */
 export function AuthPromptDialog() {
-  const { authPromptOpen, setAuthPromptOpen, region, t, storeName } = useEuromart()
+  const { authPromptOpen, setAuthPromptOpen, setSignUpOpen, region, t, storeName } = useEuromart()
 
   const perks = [
     { icon: ClipboardList, label: t("authPerkOrders") },
@@ -54,13 +53,16 @@ export function AuthPromptDialog() {
         </ul>
 
         <div className="flex flex-col gap-2">
-          <Link
-            href="/auth/sign-up"
-            onClick={() => setAuthPromptOpen(false)}
-            className={cn(buttonVariants({ size: "lg" }), "h-11 w-full rounded-full text-base")}
+          <Button
+            size="lg"
+            className="h-11 w-full rounded-full text-base"
+            onClick={() => {
+              setAuthPromptOpen(false)
+              setSignUpOpen(true)
+            }}
           >
             {t("createAccount")}
-          </Link>
+          </Button>
           <p className="text-center text-sm text-muted-foreground">
             {t("alreadyMember")}{" "}
             <Link

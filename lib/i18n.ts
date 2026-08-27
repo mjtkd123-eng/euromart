@@ -731,6 +731,105 @@ const dict = {
     hu: "A jelszavak nem egyeznek.",
   },
 
+  /* --- 회원가입 모달 & GDPR 동의 --- */
+  signUpModalTitle: {
+    ko: "회원가입",
+    en: "Create your account",
+    de: "Konto erstellen",
+    cs: "Vytvořit účet",
+    fr: "Créer votre compte",
+    hu: "Fiók létrehozása",
+  },
+  signUpModalSubtitle: {
+    ko: "이메일로 몇 초 만에 가입하고 주문을 시작하세요.",
+    en: "Sign up with your email in seconds and start ordering.",
+    de: "Registrieren Sie sich in Sekunden per E-Mail und bestellen Sie los.",
+    cs: "Zaregistrujte se e-mailem za pár sekund a začněte nakupovat.",
+    fr: "Inscrivez-vous par e-mail en quelques secondes et commandez.",
+    hu: "Regisztráljon e-mailben pár másodperc alatt, és kezdjen rendelni.",
+  },
+  agreeAll: {
+    ko: "아래의 이용약관 및 개인정보 처리방침에 모두 동의합니다.",
+    en: "I agree to all of the terms of service and the privacy policy below.",
+    de: "Ich stimme allen unten genannten AGB und der Datenschutzerklärung zu.",
+    cs: "Souhlasím se všemi níže uvedenými podmínkami a zásadami ochrany osobních údajů.",
+    fr: "J'accepte l'ensemble des conditions et la politique de confidentialité ci-dessous.",
+    hu: "Elfogadom az alábbi felhasználási feltételeket és adatvédelmi szabályzatot.",
+  },
+  requiredTag: {
+    ko: "필수",
+    en: "Required",
+    de: "Erforderlich",
+    cs: "Povinné",
+    fr: "Requis",
+    hu: "Kötelező",
+  },
+  termsConsentLabel: {
+    ko: "K-EuroMart 이용약관 및 개인정보 처리방침 동의",
+    en: "Agree to the K-EuroMart terms of service and privacy policy",
+    de: "K-EuroMart AGB und Datenschutzerklärung zustimmen",
+    cs: "Souhlas s podmínkami a ochranou osobních údajů K-EuroMart",
+    fr: "Accepter les conditions et la politique de confidentialité K-EuroMart",
+    hu: "A K-EuroMart feltételeinek és adatvédelmi szabályzatának elfogadása",
+  },
+  termsConsentHint: {
+    ko: "쿠키 활용 및 14일 철회권 등을 포함합니다.",
+    en: "Includes cookie usage and the 14-day right of withdrawal.",
+    de: "Enthält Cookie-Nutzung und das 14-tägige Widerrufsrecht.",
+    cs: "Zahrnuje používání cookies a 14denní právo na odstoupení.",
+    fr: "Inclut l'usage des cookies et le droit de rétractation de 14 jours.",
+    hu: "Tartalmazza a cookie-k használatát és a 14 napos elállási jogot.",
+  },
+  viewTerms: { ko: "보기", en: "View", de: "Ansehen", cs: "Zobrazit", fr: "Voir", hu: "Megnyitás" },
+  hideTerms: { ko: "닫기", en: "Hide", de: "Ausblenden", cs: "Skrýt", fr: "Masquer", hu: "Elrejtés" },
+  termsRequiredError: {
+    ko: "필수 약관에 동의해야 가입할 수 있습니다.",
+    en: "You must accept the required terms to sign up.",
+    de: "Sie müssen die erforderlichen Bedingungen akzeptieren.",
+    cs: "Pro registraci musíte přijmout povinné podmínky.",
+    fr: "Vous devez accepter les conditions requises pour vous inscrire.",
+    hu: "A regisztrációhoz el kell fogadnia a kötelező feltételeket.",
+  },
+
+  /* 약관 상세 — 본문은 ko/en만 관리하고 현지 언어에서는 영어로 대체됩니다. */
+  termsDocTitle: {
+    ko: "이용약관 및 개인정보 처리방침",
+    en: "Terms of Service & Privacy Policy",
+  },
+  termsArt1Title: { ko: "제1조 (목적)", en: "Article 1 (Purpose)" },
+  termsArt1Body: {
+    ko: "본 약관은 K-EuroMart가 제공하는 서비스 이용과 관련하여 회사와 회원의 권리와 의무를 규정합니다.",
+    en: "These terms define the rights and obligations of K-EuroMart and its members in relation to the use of the service.",
+  },
+  termsArt2Title: { ko: "제2조 (사업자 정보)", en: "Article 2 (Business information)" },
+  termsArt2Body: {
+    ko: "상호: K-EuroMart (테스트 단계).",
+    en: "Trade name: K-EuroMart (test phase).",
+  },
+  termsArt3Title: {
+    ko: "제3조 (회원가입 및 개인정보 보호)",
+    en: "Article 3 (Registration and data protection)",
+  },
+  termsArt3Body: {
+    ko: "회사는 EU 일반 개인정보 보호법(GDPR)을 준수합니다. 수집한 개인정보는 주문·배송 처리 및 장바구니 동기화 목적으로만 사용되며, 회원은 언제든지 개인정보의 열람·정정·삭제를 요청하거나 동의를 철회할 수 있습니다.",
+    en: "We comply with the EU General Data Protection Regulation (GDPR). Personal data is used only to process orders and deliveries and to sync your cart. You may request access, correction, or deletion of your data, or withdraw your consent, at any time.",
+  },
+  termsArt4Title: { ko: "제4조 (쿠키 운용)", en: "Article 4 (Use of cookies)" },
+  termsArt4Body: {
+    ko: "회사는 맞춤형 서비스 제공과 이용 분석을 위해 쿠키를 사용합니다. 회원은 쿠키 저장을 거부할 권리가 있으며, 거부 시 일부 기능이 제한될 수 있습니다.",
+    en: "We use cookies to personalise the service and analyse usage. You have the right to refuse cookies; some features may be limited if you do.",
+  },
+  termsArt5Title: { ko: "제5조 (배송)", en: "Article 5 (Delivery)" },
+  termsArt5Body: {
+    ko: "49유로 이상 주문 시 무료 배송이 적용됩니다.",
+    en: "Free delivery applies to orders of 49 EUR or more.",
+  },
+  termsArt6Title: { ko: "제6조 (청약철회)", en: "Article 6 (Right of withdrawal)" },
+  termsArt6Body: {
+    ko: "EU 소비자 보호 지침에 따라 상품 수령일로부터 14일 이내에 청약을 철회할 수 있습니다. 다만 신선식품 등 성질상 철회가 제한되는 상품에는 예외가 적용됩니다.",
+    en: "Under EU consumer protection directives you may withdraw within 14 days of receiving your goods. Exceptions apply to items such as fresh food where withdrawal is restricted by their nature.",
+  },
+
   /* --- 푸터 --- */
   ourStores: {
     ko: "매장 위치",

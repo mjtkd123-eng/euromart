@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { AuthShell } from "@/components/auth/auth-shell"
+import { TermsConsent } from "@/components/euromart/terms-consent"
 import { useDetectedLang } from "@/lib/use-detected-lang"
 import type { Lang } from "@/lib/i18n"
 import Link from "next/link"
@@ -44,6 +45,7 @@ export default function SignUpPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [repeatPassword, setRepeatPassword] = useState("")
+  const [agreedTerms, setAgreedTerms] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
@@ -59,6 +61,11 @@ export default function SignUpPage() {
       setIsLoading(false)
       return
     }
+    if (!agreedTerms) {
+      setError(t("termsRequiredError"))
+      setIsLoading(false)
+      return
+    }
 
     try {
       const { error } = await supabase.auth.signUp({
@@ -67,7 +74,12 @@ export default function SignUpPage() {
         options: {
           emailRedirectTo:
             process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ?? `${window.location.origin}/auth/callback`,
-          data: { full_name: fullName, role: "customer" },
+          data: {
+            full_name: fullName,
+            role: "customer",
+            terms_accepted_at: new Date().toISOString(),
+            terms_version: "2026-08-eu-gdpr",
+          },
         },
       })
       if (error) throw error
@@ -128,8 +140,24 @@ export default function SignUpPage() {
             className="h-11"
           />
         </div>
-        {error && <p className="text-sm text-destructive">{error}</p>}
-        <Button type="submit" className="h-11 w-full rounded-full text-base" disabled={isLoading}>
+        <TermsConsent
+          t={t}
+          agreed={agreedTerms}
+          onAgreedChange={(next) => {
+            setAgreedTerms(next)
+            setError(null)
+          }}
+        />
+        {error && (
+          <p role="alert" className="break-keep text-sm font-medium text-destructive">
+            {error}
+          </p>
+        )}
+        <Button
+          type="submit"
+          className="h-11 w-full rounded-full text-base"
+          disabled={isLoading || !agreedTerms}
+        >
           {isLoading ? t("creatingAccount") : t("signUpTitle")}
         </Button>
       </form>

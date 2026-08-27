@@ -27,6 +27,7 @@ export function AccountMenu() {
         variant="outline"
         size="sm"
         className="rounded-full"
+        aria-label={t("signInOrRegister")}
         onClick={() => setAuthPromptOpen(true)}
       >
         <User className="size-4" aria-hidden="true" />

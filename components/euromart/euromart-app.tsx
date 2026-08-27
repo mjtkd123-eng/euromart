@@ -11,6 +11,7 @@ import { CartDrawer } from "./cart-drawer"
 import { FloatingCart } from "./floating-cart"
 import { EuromartFooter } from "./euromart-footer"
 import { AuthPromptDialog } from "./auth-prompt-dialog"
+import { SignUpModal } from "./sign-up-modal"
 
 export function EuromartApp({
   regions,
@@ -34,6 +35,7 @@ export function EuromartApp({
         <CartDrawer />
         <FloatingCart />
         <AuthPromptDialog />
+        <SignUpModal />
       </div>
     </EuromartProvider>
   )
