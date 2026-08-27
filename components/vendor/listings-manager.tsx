@@ -33,8 +33,8 @@ import {
 } from "@/components/ui/dialog"
 import { FormNotice } from "./form-notice"
 
-/** 재고 5개 이하를 "품절 임박"으로 간주합니다. (요구사항 기준) */
-const LOW_STOCK_THRESHOLD = 5
+/** 재고 10개 이하를 "품절 임박"으로 간주합니다. (상위 대시보드 기준과 통일) */
+const LOW_STOCK_THRESHOLD = 10
 
 const CATEGORY_LABEL = new Map(categories.map((c) => [c.id, c.nameKo]))
 
