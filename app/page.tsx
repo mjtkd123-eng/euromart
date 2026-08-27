@@ -1,15 +1,20 @@
 import { EuromartApp } from "@/components/euromart/euromart-app"
 import { fetchRegions } from "@/lib/euromart-server"
 import { getSessionProfile } from "@/lib/auth"
+import { getFxRateMap } from "@/lib/fx"
 
 export const dynamic = "force-dynamic"
 
 export default async function Page() {
-  const [regions, profile] = await Promise.all([fetchRegions(), getSessionProfile()])
+  const [regions, profile, fxRates] = await Promise.all([
+    fetchRegions(),
+    getSessionProfile(),
+    getFxRateMap(),
+  ])
 
   const user = profile
     ? { id: profile.id, email: profile.email, fullName: profile.fullName, role: profile.role }
     : null
 
-  return <EuromartApp regions={regions} user={user} />
+  return <EuromartApp regions={regions} user={user} fxRates={fxRates} />
 }

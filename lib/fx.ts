@@ -1,9 +1,9 @@
 import "server-only"
 import { createClient } from "@/lib/supabase/server"
 import { createServiceClient } from "@/lib/supabase/service"
+import { FX_BASE, type FxRateMap } from "@/lib/fx-shared"
 
-/** 모든 환율의 기준 통화. ECB 피드가 EUR 기준으로 제공됩니다. */
-export const FX_BASE = "EUR"
+export { FX_BASE, convert, formatConverted, type FxRateMap } from "@/lib/fx-shared"
 
 /** 외부 API 실패 시 사용하는 시드 폴백값 (EUR 기준, 대략치). */
 const SEED_RATES: Record<string, number> = {
@@ -29,31 +29,13 @@ export interface FxRefreshResult {
 }
 
 /** 스토어프론트/대시보드가 읽는 캐시된 환율 맵 (EUR → 통화코드). */
-export async function getFxRateMap(): Promise<Record<string, number>> {
+export async function getFxRateMap(): Promise<FxRateMap> {
   const supabase = await createClient()
   const { data } = await supabase.from("fx_rates").select("quote, rate").eq("base", FX_BASE)
 
-  const map: Record<string, number> = { [FX_BASE]: 1 }
+  const map: FxRateMap = { [FX_BASE]: 1 }
   for (const row of data ?? []) map[row.quote] = Number(row.rate)
   return map
-}
-
-/**
- * 두 통화 간 금액을 환산합니다. 환율 정보가 없으면 null을 반환합니다.
- * 표시용 참고 지표이며, 실제 결제 금액은 각 매장의 현지 통화 가격을 사용합니다.
- */
-export function convert(
-  amount: number,
-  from: string,
-  to: string,
-  rates: Record<string, number>,
-): number | null {
-  if (from === to) return amount
-  const fromRate = rates[from]
-  const toRate = rates[to]
-  if (!fromRate || !toRate) return null
-  // EUR 기준 환율이므로 base로 되돌린 뒤 목표 통화로 변환합니다.
-  return (amount / fromRate) * toRate
 }
 
 /**

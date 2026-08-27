@@ -3,11 +3,14 @@
 import { Plus, Minus } from "lucide-react"
 import { useEuromart } from "@/lib/euromart-context"
 import { formatPrice, type ResolvedProduct } from "@/lib/storesData"
+import { FX_BASE, formatConverted } from "@/lib/fx-shared"
 import { Button } from "@/components/ui/button"
 
 export function ProductCard({ product }: { product: ResolvedProduct }) {
-  const { region, addItem, setQuantity, getQuantity } = useEuromart()
+  const { region, addItem, setQuantity, getQuantity, fxRates } = useEuromart()
   const qty = getQuantity(product.id)
+  // 현지 통화가 기준 통화와 다를 때만 참고용 환산가를 함께 보여줍니다.
+  const approx = formatConverted(product.price, region.currency.code, FX_BASE, fxRates)
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-shadow hover:shadow-md">
@@ -36,7 +39,12 @@ export function ProductCard({ product }: { product: ResolvedProduct }) {
         <p className="text-[11px] text-muted-foreground">{product.unit}</p>
 
         <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-          <span className="text-base font-black text-foreground">{formatPrice(product.price, region.currency)}</span>
+          <span className="flex flex-col leading-tight">
+            <span className="text-base font-black text-foreground">
+              {formatPrice(product.price, region.currency)}
+            </span>
+            {approx && <span className="text-[11px] font-medium text-muted-foreground">{approx}</span>}
+          </span>
 
           {qty === 0 ? (
             <Button

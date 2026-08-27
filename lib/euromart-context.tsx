@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
 import { getRegion, getRegionProducts, type Region, type ResolvedProduct } from "./storesData"
+import type { FxRateMap } from "./fx-shared"
 
 export interface CurrentUser {
   id: string
@@ -30,6 +31,9 @@ interface EuromartContextValue {
   region: Region
   regionId: string
   setRegionId: (id: string) => void
+
+  /** EUR 기준 환율 캐시 — 표시용 환산가에 사용 */
+  fxRates: FxRateMap
 
   /* 상품 / 필터 */
   products: ResolvedProduct[]
@@ -67,10 +71,12 @@ type CartsByRegion = Record<string, CartLine[]>
 export function EuromartProvider({
   initialRegions,
   user = null,
+  fxRates = {},
   children,
 }: {
   initialRegions: Region[]
   user?: CurrentUser | null
+  fxRates?: FxRateMap
   children: ReactNode
 }) {
   const regions = initialRegions
@@ -183,6 +189,7 @@ export function EuromartProvider({
       region,
       regionId: region.id,
       setRegionId,
+      fxRates,
       products,
       filteredProducts,
       activeCategory,
@@ -204,7 +211,7 @@ export function EuromartProvider({
       setCartOpen,
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [regions, regionId, carts, activeCategory, searchQuery, cartOpen, user])
+  }, [regions, regionId, carts, activeCategory, searchQuery, cartOpen, user, fxRates])
 
   return <EuromartContext.Provider value={value}>{children}</EuromartContext.Provider>
 }
