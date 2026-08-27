@@ -90,7 +90,7 @@ export async function fetchRegions(): Promise<Region[]> {
     list.sort((a, b) => (a.featured === b.featured ? a.nameKo.localeCompare(b.nameKo) : a.featured ? -1 : 1))
   }
 
-  return regions.map((r): Region => {
+  const mapped = regions.map((r): Region => {
     const baseCurrency = currencyByCode.get(r.currency_code)
     return {
       id: r.id,
@@ -115,4 +115,93 @@ export async function fetchRegions(): Promise<Region[]> {
       products: productsByRegion.get(r.id) ?? [],
     }
   })
+
+  // 데모: 국가당 매장이 1개면 두 번째 도시 매장을 복제해 보여 줌
+  return ensureTwoStoresPerCountry(mapped)
+}
+
+/** 국가별 두 번째 매장(도시) 메타 — DB에 없을 때 표시용 */
+const SECOND_STORE_BY_COUNTRY: Record<
+  string,
+  {
+    id: string
+    city: string
+    store: { ko: string; en: string }
+    heroTitle: { ko: string; en: string }
+    heroSubtitle: { ko: string; en: string }
+  }
+> = {
+  HU: {
+    id: "debrecen",
+    city: "Debrecen",
+    store: { ko: "데브레첸 K마트", en: "K-EuroMart Debrecen" },
+    heroTitle: { ko: "데브레첸의 한국 식료품점", en: "Korean Grocery in Debrecen" },
+    heroSubtitle: { ko: "헝가리 동부에서도 신선한 한식을 받아보세요.", en: "Fresh Korean groceries in eastern Hungary." },
+  },
+  DE: {
+    id: "munich",
+    city: "Munich",
+    store: { ko: "뮌헨 K마트", en: "K-EuroMart München" },
+    heroTitle: { ko: "뮌헨의 한국 식료품점", en: "Korean Grocery in Munich" },
+    heroSubtitle: { ko: "바이에른에서도 한국의 맛을 즐기세요.", en: "Enjoy Korean flavors across Bavaria." },
+  },
+  FR: {
+    id: "lyon",
+    city: "Lyon",
+    store: { ko: "리옹 한인마트", en: "K-EuroMart Lyon" },
+    heroTitle: { ko: "리옹에서 만나는 한국의 맛", en: "Korean Flavors in Lyon" },
+    heroSubtitle: { ko: "프랑스 남동부까지 한식 배달.", en: "Korean groceries delivered across southeast France." },
+  },
+  AT: {
+    id: "graz",
+    city: "Graz",
+    store: { ko: "그라츠 K마트", en: "K-EuroMart Graz" },
+    heroTitle: { ko: "그라츠의 한국 식료품점", en: "Korean Grocery in Graz" },
+    heroSubtitle: { ko: "슈타이어마르크에서도 정통 한식 재료를.", en: "Authentic Korean staples in Styria." },
+  },
+  CZ: {
+    id: "brno",
+    city: "Brno",
+    store: { ko: "브르노 K마트", en: "K-EuroMart Brno" },
+    heroTitle: { ko: "브르노의 한국 식료품점", en: "Korean Grocery in Brno" },
+    heroSubtitle: { ko: "모라비아에서도 진짜 한국의 맛.", en: "Genuine Korean taste in Moravia." },
+  },
+}
+
+function ensureTwoStoresPerCountry(regions: Region[]): Region[] {
+  const byCountry = new Map<string, Region[]>()
+  const countryOrder: string[] = []
+  for (const r of regions) {
+    if (!byCountry.has(r.countryCode)) countryOrder.push(r.countryCode)
+    const list = byCountry.get(r.countryCode) ?? []
+    list.push(r)
+    byCountry.set(r.countryCode, list)
+  }
+
+  const result: Region[] = []
+  for (const code of countryOrder) {
+    const list = byCountry.get(code) ?? []
+    result.push(...list)
+    if (list.length >= 2) continue
+
+    const base = list[0]
+    const extra = SECOND_STORE_BY_COUNTRY[code]
+    if (!base || !extra) continue
+    if (regions.some((r) => r.id === extra.id)) continue
+
+    result.push({
+      ...base,
+      id: extra.id,
+      city: extra.city,
+      store: { ...extra.store },
+      hero: {
+        ...base.hero,
+        title: { ...extra.heroTitle },
+        subtitle: { ...extra.heroSubtitle },
+      },
+      products: base.products.map((p) => ({ ...p })),
+    })
+  }
+
+  return result
 }
