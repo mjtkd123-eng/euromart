@@ -82,6 +82,12 @@ export interface VendorStats {
   revenue: number
   lowStock: number
   activeListings: number
+  /** 오늘(매장 로컬 자정 기준) 접수된 주문 건수 */
+  todayOrderCount: number
+  /** 오늘 매출 (취소 제외) */
+  todayRevenue: number
+  /** 아직 처리 대기 중인 주문(접수/포장/호출대기) 건수 */
+  openOrderCount: number
 }
 
 export interface VendorDashboardData {
@@ -217,11 +223,28 @@ export async function getVendorDashboard(vendorId: string): Promise<VendorDashbo
     catalog,
     promotions,
     orders,
-    stats: {
-      orderCount: orders.length,
-      revenue: orders.filter((o) => o.status !== "cancelled").reduce((s, o) => s + o.total, 0),
-      lowStock: listings.filter((l) => l.stock <= 10).length,
-      activeListings: listings.filter((l) => l.active).length,
-    },
+    stats: buildStats(orders, listings),
+  }
+}
+
+/** 처리 대기로 간주하는 주문 상태 (판매자 액션이 필요한 상태) */
+const OPEN_ORDER_STATUSES = new Set(["pending", "packed", "awaiting_courier", "confirmed"])
+
+function buildStats(orders: VendorOrder[], listings: VendorListing[]): VendorStats {
+  const startOfToday = new Date()
+  startOfToday.setHours(0, 0, 0, 0)
+  const todayMs = startOfToday.getTime()
+
+  const notCancelled = orders.filter((o) => o.status !== "cancelled")
+  const todayOrders = notCancelled.filter((o) => new Date(o.createdAt).getTime() >= todayMs)
+
+  return {
+    orderCount: orders.length,
+    revenue: notCancelled.reduce((s, o) => s + o.total, 0),
+    lowStock: listings.filter((l) => l.stock <= 10).length,
+    activeListings: listings.filter((l) => l.active).length,
+    todayOrderCount: todayOrders.length,
+    todayRevenue: todayOrders.reduce((s, o) => s + o.total, 0),
+    openOrderCount: orders.filter((o) => OPEN_ORDER_STATUSES.has(o.status)).length,
   }
 }

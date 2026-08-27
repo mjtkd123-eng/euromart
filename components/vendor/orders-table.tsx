@@ -8,12 +8,18 @@ import { formatPrice } from "@/lib/storesData"
 import { Badge } from "@/components/ui/badge"
 import { FormNotice } from "./form-notice"
 
+/** 판매자가 선택할 수 있는 주문 처리 흐름 (Bolt 배달 연동 기준) */
+const STATUS_FLOW = ["pending", "packed", "awaiting_courier", "shipped", "delivered", "cancelled"] as const
+
 const STATUS_LABELS: Record<string, string> = {
-  pending: "접수",
-  confirmed: "확인",
-  shipped: "배송중",
-  delivered: "완료",
+  pending: "주문 접수",
+  packed: "포장 완료",
+  awaiting_courier: "Bolt 배달 호출 대기",
+  shipped: "배달중",
+  delivered: "배달 완료",
   cancelled: "취소",
+  // 하위 호환
+  confirmed: "확인",
 }
 
 interface Props {
@@ -127,11 +133,15 @@ function OrderRow({
               aria-label={`${order.customerName} 주문 상태`}
               className="h-8 rounded-md border border-input bg-background px-2 text-xs font-semibold text-foreground"
             >
-              {Object.entries(STATUS_LABELS).map(([value, label]) => (
+              {STATUS_FLOW.map((value) => (
                 <option key={value} value={value}>
-                  {label}
+                  {STATUS_LABELS[value]}
                 </option>
               ))}
+              {/* 기존 데이터의 상태값이 흐름에 없으면 현재 값을 옵션으로 유지 */}
+              {!STATUS_FLOW.includes(status as (typeof STATUS_FLOW)[number]) && (
+                <option value={status}>{STATUS_LABELS[status] ?? status}</option>
+              )}
             </select>
           </div>
         ) : (

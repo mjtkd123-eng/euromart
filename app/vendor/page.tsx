@@ -4,11 +4,7 @@ import { getSessionProfile } from "@/lib/auth"
 import { getVendorDashboard } from "@/lib/vendor-server"
 import { formatPrice } from "@/lib/storesData"
 import { DashboardShell, StatStrip } from "@/components/dashboard/dashboard-shell"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { StoreSettingsForm } from "@/components/vendor/store-settings-form"
-import { ListingsManager } from "@/components/vendor/listings-manager"
-import { PromotionsManager } from "@/components/vendor/promotions-manager"
-import { OrdersTable } from "@/components/vendor/orders-table"
+import { VendorTabs } from "@/components/vendor/vendor-tabs"
 
 export const metadata: Metadata = {
   title: "판매자 대시보드 · K-EuroMart",
@@ -42,15 +38,20 @@ export default async function VendorPage() {
   return (
     <DashboardShell
       eyebrow={`${store.city} · ${store.countryCode}`}
-      title={store.storeKo}
-      subtitle={`${store.storeEn} — 상품 가격과 재고, 프로모션, 주문 상태를 이곳에서 관리합니다.`}
+      title={`K-EuroMart [${store.storeKo}] 점주님 환영합니다`}
+      subtitle={`${store.storeEn} — 오늘의 주문과 매출, 재고, 정산을 매장 카운터에서 빠르게 확인하세요.`}
       email={profile.email}
     >
       <StatStrip
         items={[
-          { label: "주문", value: String(stats.orderCount), hint: "최근 50건 기준" },
-          { label: "매출", value: formatPrice(stats.revenue, store.currency), hint: "취소 제외" },
-          { label: "판매중 상품", value: `${stats.activeListings} / ${listings.length}` },
+          { label: "오늘 주문", value: String(stats.todayOrderCount), hint: "자정 이후 접수" },
+          { label: "오늘 매출", value: formatPrice(stats.todayRevenue, store.currency), hint: "취소 제외" },
+          {
+            label: "처리 대기",
+            value: String(stats.openOrderCount),
+            hint: "포장·호출 대기",
+            alert: stats.openOrderCount > 0,
+          },
           {
             label: "재고 부족",
             value: String(stats.lowStock),
@@ -60,27 +61,14 @@ export default async function VendorPage() {
         ]}
       />
 
-      <Tabs defaultValue="listings" className="mt-5">
-        <TabsList>
-          <TabsTrigger value="listings">상품 · 재고</TabsTrigger>
-          <TabsTrigger value="orders">주문</TabsTrigger>
-          <TabsTrigger value="promotions">프로모션</TabsTrigger>
-          <TabsTrigger value="store">매장 설정</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="listings" className="pt-4">
-          <ListingsManager store={store} listings={listings} catalog={catalog} />
-        </TabsContent>
-        <TabsContent value="orders" className="pt-4">
-          <OrdersTable store={store} orders={orders} />
-        </TabsContent>
-        <TabsContent value="promotions" className="pt-4">
-          <PromotionsManager store={store} promotions={promotions} />
-        </TabsContent>
-        <TabsContent value="store" className="pt-4">
-          <StoreSettingsForm store={store} />
-        </TabsContent>
-      </Tabs>
+      <VendorTabs
+        store={store}
+        listings={listings}
+        catalog={catalog}
+        promotions={promotions}
+        orders={orders}
+        stats={stats}
+      />
     </DashboardShell>
   )
 }

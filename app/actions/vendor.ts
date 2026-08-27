@@ -199,7 +199,16 @@ export async function deletePromotion(regionId: string, promotionId: string): Pr
 
 /* ----------------------------- 주문 상태 ----------------------------- */
 
-const ORDER_STATUSES = ["pending", "confirmed", "shipped", "delivered", "cancelled"] as const
+const ORDER_STATUSES = [
+  "pending", // 주문 접수
+  "packed", // 포장 완료
+  "awaiting_courier", // Bolt 배달 호출 대기
+  "shipped", // 배달중
+  "delivered", // 배달 완료
+  "cancelled", // 취소
+  // 하위 호환: 기존 데이터에 남아있을 수 있는 상태값
+  "confirmed",
+] as const
 
 export async function updateOrderStatus(
   regionId: string,
@@ -221,5 +230,38 @@ export async function updateOrderStatus(
 
   if (error) return { ok: false, error: error.message }
   revalidatePath("/vendor")
+  return { ok: true }
+}
+
+/* --------------------------- 재고 즉시 수정 --------------------------- */
+
+/**
+ * 대시보드 요약 화면에서 품절 임박 상품의 재고만 빠르게 갱신합니다.
+ * 가격 등 다른 필드는 건드리지 않습니다.
+ */
+export async function quickUpdateStock(
+  regionId: string,
+  listingId: string,
+  stock: number,
+): Promise<Result> {
+  const guard = await requireVendorRegion(regionId)
+  if ("error" in guard) return { ok: false, error: guard.error }
+
+  if (!Number.isInteger(stock) || stock < 0) {
+    return { ok: false, error: "재고는 0 이상의 정수여야 합니다." }
+  }
+  if (stock > 100000) {
+    return { ok: false, error: "재고 수량이 너무 큽니다." }
+  }
+
+  const { error } = await guard.supabase
+    .from("region_products")
+    .update({ stock })
+    .eq("id", listingId)
+    .eq("region_id", regionId)
+
+  if (error) return { ok: false, error: error.message }
+  revalidatePath("/vendor")
+  revalidatePath("/")
   return { ok: true }
 }
