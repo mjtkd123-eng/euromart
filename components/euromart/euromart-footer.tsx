@@ -4,7 +4,7 @@ import { ShoppingBag, MapPin } from "lucide-react"
 import { useEuromart } from "@/lib/euromart-context"
 
 export function EuromartFooter() {
-  const { regions, regionId, setRegionId } = useEuromart()
+  const { regions, regionId, setRegionId, t } = useEuromart()
 
   return (
     <footer className="border-t border-border bg-card">
@@ -21,7 +21,7 @@ export function EuromartFooter() {
         <div>
           <p className="mb-3 flex items-center gap-1.5 text-sm font-bold text-foreground">
             <MapPin className="size-4 text-primary" aria-hidden="true" />
-            매장 위치 · Our stores
+            {t("ourStores")}
           </p>
           <div className="flex flex-wrap gap-2">
             {regions.map((r) => (
@@ -35,13 +35,14 @@ export function EuromartFooter() {
                 }`}
               >
                 {r.city}
+                <span className="ml-1.5 text-xs opacity-70">{r.countryCode}</span>
               </button>
             ))}
           </div>
         </div>
 
         <p className="text-xs text-muted-foreground">
-          유럽 전역의 한국 식료품 배달 · Korean groceries delivered across Europe. k-euromart.com — 데모 템플릿입니다.
+          {t("footerTagline")} · k-euromart.com
         </p>
       </div>
     </footer>

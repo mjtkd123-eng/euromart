@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 import { signOut } from "@/app/actions/auth"
 
 export function AccountMenu() {
-  const { user } = useEuromart()
+  const { user, t } = useEuromart()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -28,12 +28,12 @@ export function AccountMenu() {
         className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-full")}
       >
         <User className="size-4" aria-hidden="true" />
-        <span className="hidden sm:inline">로그인</span>
+        <span className="hidden sm:inline">{t("login")}</span>
       </Link>
     )
   }
 
-  const label = user.fullName || user.email || "내 계정"
+  const label = user.fullName || user.email || t("myAccount")
 
   return (
     <div className="relative" ref={ref}>
@@ -43,7 +43,7 @@ export function AccountMenu() {
         className="rounded-full"
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label="계정 메뉴"
+        aria-label={t("accountMenu")}
         onClick={() => setOpen((v) => !v)}
       >
         <span className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-xs font-black text-primary">
@@ -59,7 +59,11 @@ export function AccountMenu() {
           <div className="px-3 py-2">
             <p className="truncate text-sm font-bold text-foreground">{label}</p>
             <p className="truncate text-xs text-muted-foreground">
-              {user.role === "admin" ? "관리자" : user.role === "vendor" ? "판매자" : "고객"}
+              {user.role === "admin"
+                ? t("roleAdmin")
+                : user.role === "vendor"
+                  ? t("roleVendor")
+                  : t("roleCustomer")}
             </p>
           </div>
 
@@ -71,7 +75,7 @@ export function AccountMenu() {
               onClick={() => setOpen(false)}
             >
               <LayoutDashboard className="size-4 text-primary" aria-hidden="true" />
-              판매자 대시보드
+              {t("vendorDashboard")}
             </Link>
           )}
           {user.role === "admin" && (
@@ -82,7 +86,7 @@ export function AccountMenu() {
               onClick={() => setOpen(false)}
             >
               <ShieldCheck className="size-4 text-primary" aria-hidden="true" />
-              관리자 콘솔
+              {t("adminConsole")}
             </Link>
           )}
 
@@ -93,7 +97,7 @@ export function AccountMenu() {
               className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
             >
               <LogOut className="size-4 text-muted-foreground" aria-hidden="true" />
-              로그아웃
+              {t("signOut")}
             </button>
           </form>
         </div>

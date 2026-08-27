@@ -28,6 +28,9 @@ export function CartDrawer() {
     clearCart,
     cartOpen,
     setCartOpen,
+    t,
+    productName,
+    storeName,
   } = useEuromart()
   const [step, setStep] = useState<Step>("cart")
   const [form, setForm] = useState({ name: "", address: "", phone: "", promo: "" })
@@ -68,7 +71,7 @@ export function CartDrawer() {
 
     setSubmitting(false)
     if (!result.ok) {
-      setOrderError(result.error ?? "주문에 실패했습니다.")
+      setOrderError(result.error ?? t("orderFailed"))
       return
     }
     setOrderId(result.orderId ?? null)
@@ -82,17 +85,17 @@ export function CartDrawer() {
         <SheetHeader className="border-b border-border">
           <SheetTitle className="flex items-center gap-2 text-lg font-black">
             {step === "checkout" && (
-              <button onClick={() => setStep("cart")} aria-label="장바구니로 돌아가기">
+              <button onClick={() => setStep("cart")} aria-label={t("backToCart")}>
                 <ArrowLeft className="size-5" aria-hidden="true" />
               </button>
             )}
             <ShoppingBag className="size-5 text-primary" aria-hidden="true" />
-            {step === "cart" && `장바구니 (${itemCount})`}
-            {step === "checkout" && "결제하기"}
-            {step === "done" && "주문 완료"}
+            {step === "cart" && t("cartWithCount", { count: itemCount })}
+            {step === "checkout" && t("checkout")}
+            {step === "done" && t("orderComplete")}
           </SheetTitle>
           <SheetDescription>
-            {region.store.ko} · {region.city} · {currency.code}
+            {storeName(region)} · {region.city} · {currency.code}
           </SheetDescription>
         </SheetHeader>
 

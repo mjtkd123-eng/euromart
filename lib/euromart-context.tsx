@@ -3,6 +3,15 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
 import { getRegion, getRegionProducts, type Region, type ResolvedProduct } from "./storesData"
 import type { FxRateMap } from "./fx-shared"
+import {
+  detectLocale,
+  localLangFor,
+  resolveLang,
+  translate,
+  type Lang,
+  type Locale,
+  type TransKey,
+} from "./i18n"
 
 export interface CurrentUser {
   id: string
@@ -35,6 +44,21 @@ interface EuromartContextValue {
   /** EUR 기준 환율 캐시 — 표시용 환산가에 사용 */
   fxRates: FxRateMap
 
+  /* 언어 */
+  /** 사용자가 선택한 표시 언어 ("local"은 매장 국가에 따라 달라짐) */
+  locale: Locale
+  setLocale: (locale: Locale) => void
+  /** locale을 실제 사전 언어로 해석한 결과 */
+  lang: Lang
+  /** 현재 매장 국가의 현지 언어 이름 (없으면 null) */
+  localLangLabel: string | null
+  /** 번역 헬퍼 */
+  t: (key: TransKey, params?: Record<string, string | number>) => string
+  /** 상품명을 현재 언어로 — 한국어일 때만 한글명을 사용 */
+  productName: (product: { nameKo: string; nameEn: string }) => string
+  /** 매장명을 현재 언어로 */
+  storeName: (region: Region) => string
+
   /* 상품 / 필터 */
   products: ResolvedProduct[]
   filteredProducts: ResolvedProduct[]
@@ -65,6 +89,7 @@ const EuromartContext = createContext<EuromartContextValue | null>(null)
 
 const REGION_KEY = "k-euromart-region"
 const CART_KEY = "k-euromart-carts"
+const LOCALE_KEY = "k-euromart-locale"
 
 type CartsByRegion = Record<string, CartLine[]>
 
@@ -86,6 +111,9 @@ export function EuromartProvider({
   const [searchQuery, setSearchQuery] = useState("")
   const [cartOpen, setCartOpen] = useState(false)
   const [hydrated, setHydrated] = useState(false)
+  // 서버 렌더 시점에는 접속 환경을 알 수 없으므로 "en"으로 시작하고,
+  // 마운트 후 저장된 선택 또는 접속 환경 감지 결과로 교체합니다.
+  const [locale, setLocale] = useState<Locale>("en")
 
   // localStorage 복원
   useEffect(() => {
@@ -96,8 +124,16 @@ export function EuromartProvider({
       }
       const savedCarts = localStorage.getItem(CART_KEY)
       if (savedCarts) setCarts(JSON.parse(savedCarts))
+
+      // 사용자가 직접 고른 언어가 있으면 존중하고, 없으면 접속 환경으로 판단합니다.
+      const savedLocale = localStorage.getItem(LOCALE_KEY)
+      if (savedLocale === "ko" || savedLocale === "en" || savedLocale === "local") {
+        setLocale(savedLocale)
+      } else {
+        setLocale(detectLocale())
+      }
     } catch {
-      // ignore
+      setLocale(detectLocale())
     }
     setHydrated(true)
   }, [regions])
@@ -108,10 +144,11 @@ export function EuromartProvider({
     try {
       localStorage.setItem(REGION_KEY, regionId)
       localStorage.setItem(CART_KEY, JSON.stringify(carts))
+      localStorage.setItem(LOCALE_KEY, locale)
     } catch {
       // ignore
     }
-  }, [regionId, carts, hydrated])
+  }, [regionId, carts, locale, hydrated])
 
   function setRegionId(id: string) {
     setRegionIdState(id)
@@ -123,6 +160,15 @@ export function EuromartProvider({
     const region = getRegion(regions, regionId)
     const products = getRegionProducts(region)
     const currentCart = carts[region.id] ?? []
+
+    // 표시 언어 해석 — "local"은 현재 매장 국가의 언어로 결정됩니다.
+    const lang = resolveLang(locale, region.countryCode)
+    const localLangLabel = localLangFor(region.countryCode)?.label ?? null
+    const t = (key: TransKey, params?: Record<string, string | number>) =>
+      translate(key, lang, params)
+    const productName = (product: { nameKo: string; nameEn: string }) =>
+      lang === "ko" ? product.nameKo : product.nameEn
+    const storeName = (r: Region) => (lang === "ko" ? r.store.ko : r.store.en)
 
     const q = searchQuery.trim().toLowerCase()
     const filteredProducts = products.filter((p) => {
@@ -190,6 +236,13 @@ export function EuromartProvider({
       regionId: region.id,
       setRegionId,
       fxRates,
+      locale,
+      setLocale,
+      lang,
+      localLangLabel,
+      t,
+      productName,
+      storeName,
       products,
       filteredProducts,
       activeCategory,
@@ -211,7 +264,7 @@ export function EuromartProvider({
       setCartOpen,
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [regions, regionId, carts, activeCategory, searchQuery, cartOpen, user, fxRates])
+  }, [regions, regionId, carts, activeCategory, searchQuery, cartOpen, user, fxRates, locale])
 
   return <EuromartContext.Provider value={value}>{children}</EuromartContext.Provider>
 }

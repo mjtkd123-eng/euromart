@@ -4,21 +4,22 @@ import { Search, ShoppingBag, X } from "lucide-react"
 import { useEuromart } from "@/lib/euromart-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { RegionSwitcher } from "./region-switcher"
+import { StoreLocator } from "./store-locator"
+import { LanguageSelector } from "./language-selector"
 import { AccountMenu } from "./account-menu"
 
 export function EuromartHeader() {
-  const { region, itemCount, setCartOpen, searchQuery, setSearchQuery } = useEuromart()
+  const { region, itemCount, setCartOpen, searchQuery, setSearchQuery, lang, t, storeName } = useEuromart()
+
+  // 공지는 ko/en만 준비되어 있으므로 현지 언어에서는 영어로 표시합니다.
+  const announcement = lang === "ko" ? region.announcement.ko : region.announcement.en
+  const searchLabel = t("searchProducts")
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       {/* 공지 바 */}
       <div className="bg-primary text-primary-foreground">
-        <div className="mx-auto max-w-6xl px-4 py-1.5 text-center text-xs font-medium">
-          <span>{region.announcement.ko}</span>
-          <span className="mx-2 opacity-50">·</span>
-          <span className="opacity-90">{region.announcement.en}</span>
-        </div>
+        <div className="mx-auto max-w-6xl px-4 py-1.5 text-center text-xs font-medium">{announcement}</div>
       </div>
 
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
@@ -31,13 +32,13 @@ export function EuromartHeader() {
             <span className="text-base font-black tracking-tight">
               K<span className="text-primary">EuroMart</span>
             </span>
-            <span className="hidden text-[11px] text-muted-foreground sm:block">{region.store.ko}</span>
+            <span className="hidden text-[11px] text-muted-foreground sm:block">{storeName(region)}</span>
           </div>
         </div>
 
-        {/* 지역 선택 */}
+        {/* 국가 → 매장 선택 */}
         <div className="ml-1">
-          <RegionSwitcher />
+          <StoreLocator />
         </div>
 
         {/* 검색 (데스크톱) */}
@@ -49,28 +50,28 @@ export function EuromartHeader() {
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="상품 검색 · Search products"
+            placeholder={searchLabel}
             className="h-11 rounded-full pl-10 pr-9"
-            aria-label="상품 검색"
+            aria-label={searchLabel}
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              aria-label="검색어 지우기"
+              aria-label={t("clearSearch")}
             >
               <X className="size-4" aria-hidden="true" />
             </button>
           )}
         </div>
 
-        {/* 장바구니 + 계정 */}
+        {/* 장바구니 + 로그인 — 오른쪽 정렬이지만 언어 선택기보다 왼쪽에 놓입니다 */}
         <div className="ml-auto flex items-center gap-1 md:ml-0">
           <Button
             variant="ghost"
             size="icon"
             className="relative"
-            aria-label="장바구니 열기"
+            aria-label={t("openCart")}
             onClick={() => setCartOpen(true)}
           >
             <ShoppingBag className="size-5" aria-hidden="true" />
@@ -81,6 +82,11 @@ export function EuromartHeader() {
             )}
           </Button>
           <AccountMenu />
+        </div>
+
+        {/* 언어 선택기 — 항상 맨 오른쪽 */}
+        <div className="flex items-center border-l border-border pl-3">
+          <LanguageSelector />
         </div>
       </div>
 
@@ -94,9 +100,9 @@ export function EuromartHeader() {
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="상품 검색 · Search products"
+            placeholder={searchLabel}
             className="h-11 rounded-full pl-10"
-            aria-label="상품 검색"
+            aria-label={searchLabel}
           />
         </div>
       </div>
