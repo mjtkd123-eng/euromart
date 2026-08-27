@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { RefreshCw } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Plus, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,6 +15,8 @@ export function FxManager({ rates }: { rates: AdminFxRate[] }) {
   const [newRate, setNewRate] = useState({ base: rates[0]?.base ?? "EUR", quote: "", rate: "" })
   const [notice, setNotice] = useState<{ tone: "error" | "success"; text: string } | null>(null)
   const [pending, startTransition] = useTransition()
+  const [refreshing, setRefreshing] = useState(false)
+  const router = useRouter()
 
   const key = (r: AdminFxRate) => `${r.base}/${r.quote}`
 
@@ -80,7 +83,7 @@ export function FxManager({ rates }: { rates: AdminFxRate[] }) {
       })
       if (res.ok) {
         setNotice({ tone: "success", text: "환율이 추가되었습니다." })
-        setNewRate({ base: "KRW", quote: "", rate: "" })
+        setNewRate({ base: newRate.base, quote: "", rate: "" })
       } else {
         setNotice({ tone: "error", text: res.error ?? "추가에 실패했습니다." })
       }
@@ -89,9 +92,25 @@ export function FxManager({ rates }: { rates: AdminFxRate[] }) {
 
   return (
     <section className="flex flex-col gap-4">
-      <p className="text-sm text-muted-foreground">
-        각 매장은 현지 통화로 가격을 직접 설정하므로, 환율은 지역 간 가격 비교용 참고 지표로 사용됩니다.
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <p className="max-w-lg break-keep text-sm text-muted-foreground">
+          각 매장은 현지 통화로 가격을 직접 설정하므로, 환율은 지역 간 가격 비교용 참고 지표로 사용됩니다. 매일
+          자동으로 유럽중앙은행(ECB) 고시 환율을 반영합니다.
+        </p>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={refreshFromEcb}
+          disabled={refreshing || pending}
+          className="shrink-0 rounded-full"
+        >
+          <RefreshCw
+            className={refreshing ? "size-4 animate-spin" : "size-4"}
+            aria-hidden="true"
+          />
+          {refreshing ? "갱신 중" : "지금 갱신"}
+        </Button>
+      </div>
 
       {notice && <FormNotice tone={notice.tone}>{notice.text}</FormNotice>}
 
@@ -178,7 +197,7 @@ export function FxManager({ rates }: { rates: AdminFxRate[] }) {
               disabled={pending || !newRate.quote || !newRate.rate}
               className="w-full rounded-full"
             >
-              <RefreshCw className="size-4" aria-hidden="true" />
+              <Plus className="size-4" aria-hidden="true" />
               추가
             </Button>
           </div>
