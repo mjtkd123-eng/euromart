@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowLeft, Check, Package, Pencil, Store as StoreIcon, TrendingUp } from "lucide-react"
+import { ArrowLeft, Check, Package, Pencil, ShieldAlert, Store as StoreIcon, TrendingUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -109,6 +109,15 @@ export function VendorView() {
               <p className="text-xs text-muted-foreground">{t.vendor.subtitle}</p>
             </div>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="ml-auto shrink-0"
+            render={<Link href="/vendor/claims" />}
+          >
+            <ShieldAlert className="size-4" />
+            <span className="hidden sm:inline">환불·분쟁</span>
+          </Button>
         </div>
       </header>
 
