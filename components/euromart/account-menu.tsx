@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import { User, LogOut, LayoutDashboard, ShieldCheck } from "lucide-react"
+import { User, LogOut, LayoutDashboard, ShieldCheck, ScrollText, MessageSquareWarning } from "lucide-react"
 import { useEuromart } from "@/lib/euromart-context"
 import { Button } from "@/components/ui/button"
 import { signOut } from "@/app/actions/auth"
@@ -61,16 +61,37 @@ export function AccountMenu() {
             </p>
           </div>
 
+          <Link
+            href="/orders"
+            role="menuitem"
+            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            onClick={() => setOpen(false)}
+          >
+            <ScrollText className="size-4 text-primary" aria-hidden="true" />
+            주문 내역 · 환불 신고
+          </Link>
+
           {user.role === "vendor" && (
-            <Link
-              href="/vendor"
-              role="menuitem"
-              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-              onClick={() => setOpen(false)}
-            >
-              <LayoutDashboard className="size-4 text-primary" aria-hidden="true" />
-              판매자 대시보드
-            </Link>
+            <>
+              <Link
+                href="/vendor"
+                role="menuitem"
+                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                onClick={() => setOpen(false)}
+              >
+                <LayoutDashboard className="size-4 text-primary" aria-hidden="true" />
+                판매자 대시보드
+              </Link>
+              <Link
+                href="/vendor/claims"
+                role="menuitem"
+                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                onClick={() => setOpen(false)}
+              >
+                <MessageSquareWarning className="size-4 text-primary" aria-hidden="true" />
+                환불·분쟁 관리
+              </Link>
+            </>
           )}
           {user.role === "admin" && (
             <Link
