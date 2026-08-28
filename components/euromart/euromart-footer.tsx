@@ -41,6 +41,15 @@ export function EuromartFooter() {
           </div>
         </div>
 
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <a
+            href="/help/payment"
+            className="text-xs font-medium text-muted-foreground underline-offset-2 transition-colors hover:text-primary hover:underline"
+          >
+            {t("paymentHelpTitle")}
+          </a>
+        </div>
+
         <p className="text-xs text-muted-foreground">
           {t("footerTagline")} · k-euromart.com
         </p>

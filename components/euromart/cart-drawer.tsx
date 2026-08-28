@@ -250,10 +250,20 @@ export function CartDrawer() {
                     />
                   </div>
                   {orderError && (
-                    <p className="flex items-center gap-1.5 rounded-lg bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">
-                      <AlertCircle className="size-4 shrink-0" aria-hidden="true" />
-                      {orderError}
-                    </p>
+                    <div className="rounded-lg bg-destructive/10 px-3 py-2">
+                      <p className="flex items-center gap-1.5 text-xs font-medium text-destructive">
+                        <AlertCircle className="size-4 shrink-0" aria-hidden="true" />
+                        {orderError}
+                      </p>
+                      <a
+                        href="/help/payment"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-1.5 inline-block pl-6 text-xs font-semibold text-destructive underline underline-offset-2"
+                      >
+                        {t("paymentHelpLink")}
+                      </a>
+                    </div>
                   )}
                 </form>
               )}

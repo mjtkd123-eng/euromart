@@ -511,6 +511,22 @@ const dict = {
   },
   deleteNamed: { ko: "{name} 삭제", en: "Remove {name}" },
   orderFailed: { ko: "주문에 실패했습니다.", en: "Could not place the order." },
+  paymentHelpLink: {
+    ko: "결제 도움말 보기 →",
+    en: "View payment help →",
+    de: "Zahlungshilfe ansehen →",
+    cs: "Zobrazit nápovědu k platbě →",
+    fr: "Voir l'aide au paiement →",
+    hu: "Fizetési súgó megtekintése →",
+  },
+  paymentHelpTitle: {
+    ko: "결제 도움말 센터",
+    en: "Payment Help Center",
+    de: "Hilfe zur Zahlung",
+    cs: "Nápověda k platbě",
+    fr: "Aide au paiement",
+    hu: "Fizetési súgó",
+  },
 
   /* --- 도시명 --- */
   /**
@@ -531,7 +547,7 @@ const dict = {
     hu: "Budapest",
   },
 
-  /* --- ��어로 배너 --- */
+  /* --- ���어로 배너 --- */
   heroTitle: {
     ko: "유럽 속 한국의 맛, {city}",
     en: "Taste of Korea in Europe, {city}",
