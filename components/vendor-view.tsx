@@ -109,11 +109,14 @@ export function VendorView() {
               <p className="text-xs text-muted-foreground">{t.vendor.subtitle}</p>
             </div>
           </div>
-          <Button asChild variant="outline" size="sm" className="ml-auto shrink-0">
-            <Link href="/vendor/claims">
-              <ShieldAlert className="size-4" />
-              <span className="hidden sm:inline">환불·분쟁</span>
-            </Link>
+          <Button
+            variant="outline"
+            size="sm"
+            className="ml-auto shrink-0"
+            render={<Link href="/vendor/claims" />}
+          >
+            <ShieldAlert className="size-4" />
+            <span className="hidden sm:inline">환불·분쟁</span>
           </Button>
         </div>
       </header>

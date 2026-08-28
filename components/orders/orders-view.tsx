@@ -129,10 +129,14 @@ export function OrdersView({
     <div className="min-h-dvh bg-background pb-16">
       <header className="border-b border-border bg-card">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-4">
-          <Button asChild variant="ghost" size="icon" className="shrink-0">
-            <Link href="/" aria-label="홈으로 · Home">
-              <ArrowLeft className="size-5" />
-            </Link>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0"
+            aria-label="홈으로 · Home"
+            render={<Link href="/" />}
+          >
+            <ArrowLeft className="size-5" />
           </Button>
           <div className="flex items-center gap-2">
             <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -152,8 +156,8 @@ export function OrdersView({
             <PackageCheck className="size-10 text-muted-foreground" />
             <p className="font-medium">주문 내역이 없습니다</p>
             <p className="text-sm text-muted-foreground">No orders yet. 상품을 담고 주문해 보세요.</p>
-            <Button asChild className="mt-2">
-              <Link href="/">쇼핑하러 가기 · Shop now</Link>
+            <Button className="mt-2" render={<Link href="/" />}>
+              쇼핑하러 가기 · Shop now
             </Button>
           </Card>
         ) : (

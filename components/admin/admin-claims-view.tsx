@@ -215,10 +215,14 @@ export function AdminClaimsView({ claims }: { claims: ClaimView[] }) {
     <div className="min-h-dvh bg-background pb-16">
       <header className="border-b border-border bg-card">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-4">
-          <Button asChild variant="ghost" size="icon" className="shrink-0">
-            <Link href="/" aria-label="홈으로">
-              <ArrowLeft className="size-5" />
-            </Link>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0"
+            aria-label="홈으로"
+            render={<Link href="/" />}
+          >
+            <ArrowLeft className="size-5" />
           </Button>
           <div className="flex items-center gap-2">
             <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
