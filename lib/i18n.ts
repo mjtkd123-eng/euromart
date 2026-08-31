@@ -615,6 +615,22 @@ const dict = {
     fr: "Aide au paiement",
     hu: "Fizetési súgó",
   },
+  helpCenter: {
+    ko: "고객 센터",
+    en: "Help Center",
+    de: "Hilfe-Center",
+    cs: "Centrum nápovědy",
+    fr: "Centre d'aide",
+    hu: "Ügyfélszolgálat",
+  },
+  helpCenterDesc: {
+    ko: "배송·결제·환불·개인정보 안내를 한곳에서",
+    en: "Shipping, payment, refunds, and privacy — all in one place",
+    de: "Versand, Zahlung, Rückerstattung und Datenschutz an einem Ort",
+    cs: "Doprava, platby, vrácení a soukromí na jednom místě",
+    fr: "Livraison, paiement, remboursement et confidentialité",
+    hu: "Szállítás, fizetés, visszatérítés és adatvédelem egy helyen",
+  },
 
   /* --- 도시명 --- */
   /**
@@ -928,7 +944,7 @@ const dict = {
     ko: "49유로 이상 주문 시 무료 배송이 적용됩니다.",
     en: "Free delivery applies to orders of 49 EUR or more.",
   },
-  termsArt6Title: { ko: "제6조 (청약철회)", en: "Article 6 (Right of withdrawal)" },
+  termsArt6Title: { ko: "제6�� (청약철회)", en: "Article 6 (Right of withdrawal)" },
   termsArt6Body: {
     ko: "EU 소비자 보호 지침에 따라 상품 수령일로부터 14일 이내에 청약을 철회할 수 있습니다. 다만 신선식품 등 성질상 철회가 제한되는 상품에는 예외가 적용됩니다.",
     en: "Under EU consumer protection directives you may withdraw within 14 days of receiving your goods. Exceptions apply to items such as fresh food where withdrawal is restricted by their nature.",

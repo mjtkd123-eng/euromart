@@ -1,7 +1,8 @@
 "use client"
 
-import { ShoppingBag, MapPin } from "lucide-react"
+import { ShoppingBag, MapPin, LifeBuoy } from "lucide-react"
 import { useEuromart } from "@/lib/euromart-context"
+import { HELP_SECTIONS } from "@/lib/help-center"
 
 export function EuromartFooter() {
   const { countries, countryCode, selectCountry, t } = useEuromart()
@@ -40,13 +41,23 @@ export function EuromartFooter() {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <a
-            href="/help/payment"
-            className="text-xs font-medium text-muted-foreground underline-offset-2 transition-colors hover:text-primary hover:underline"
-          >
-            {t("paymentHelpTitle")}
-          </a>
+        <div>
+          <p className="mb-3 flex items-center gap-1.5 text-sm font-bold text-foreground">
+            <LifeBuoy className="size-4 text-primary" aria-hidden="true" />
+            {t("helpCenter")}
+          </p>
+          <ul className="flex flex-wrap gap-x-4 gap-y-2">
+            {HELP_SECTIONS.map((s) => (
+              <li key={s.id}>
+                <a
+                  href={s.href}
+                  className="text-xs font-medium text-muted-foreground underline-offset-2 transition-colors hover:text-primary hover:underline"
+                >
+                  {s.label}
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
 
         <p className="text-xs text-muted-foreground">

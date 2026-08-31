@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import { User, LogOut, LayoutDashboard, ShieldCheck, ScrollText, MessageSquareWarning } from "lucide-react"
+import { User, LogOut, LayoutDashboard, ShieldCheck, ScrollText, MessageSquareWarning, LifeBuoy } from "lucide-react"
 import { useEuromart } from "@/lib/euromart-context"
 import { Button } from "@/components/ui/button"
 import { signOut } from "@/app/actions/auth"
@@ -78,6 +78,16 @@ export function AccountMenu() {
           >
             <ScrollText className="size-4 text-primary" aria-hidden="true" />
             {t("orderHistory")}
+          </Link>
+
+          <Link
+            href="/help"
+            role="menuitem"
+            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            onClick={() => setOpen(false)}
+          >
+            <LifeBuoy className="size-4 text-primary" aria-hidden="true" />
+            {t("helpCenter")}
           </Link>
 
           {user.role === "vendor" && (
