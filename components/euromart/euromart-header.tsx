@@ -9,11 +9,15 @@ import { LanguageSelector } from "./language-selector"
 import { AccountMenu } from "./account-menu"
 
 export function EuromartHeader() {
-  const { region, itemCount, setCartOpen, searchQuery, setSearchQuery, lang, t, storeName } = useEuromart()
+  const { region, itemCount, setCartOpen, searchQuery, setSearchQuery, browseMode, lang, t, storeName } =
+    useEuromart()
 
   // 공지는 ko/en만 준비되어 있으므로 현지 언어에서는 영어로 표시합니다.
   const announcement = lang === "ko" ? region.announcement.ko : region.announcement.en
-  const searchLabel = t("searchProducts")
+  // 매장 선택 화면과 상품 화면에서 검색 대상이 달라집니다.
+  const searchPlaceholder =
+    browseMode === "stores" ? "매장 검색 · Search stores" : "상품 검색 · Search products"
+  const searchLabel = browseMode === "stores" ? "매장 검색" : t("searchProducts")
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -32,7 +36,9 @@ export function EuromartHeader() {
             <span className="text-base font-black tracking-tight">
               K<span className="text-primary">EuroMart</span>
             </span>
-            <span className="hidden text-[11px] text-muted-foreground sm:block">{storeName(region)}</span>
+            <span className="hidden text-[11px] text-muted-foreground sm:block">
+              {browseMode === "stores" ? `${region.country} 매장` : storeName(region)}
+            </span>
           </div>
         </div>
 
@@ -50,7 +56,7 @@ export function EuromartHeader() {
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={searchLabel}
+            placeholder={searchPlaceholder}
             className="h-11 rounded-full pl-10 pr-9"
             aria-label={searchLabel}
           />
@@ -100,7 +106,7 @@ export function EuromartHeader() {
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={searchLabel}
+            placeholder={searchPlaceholder}
             className="h-11 rounded-full pl-10"
             aria-label={searchLabel}
           />

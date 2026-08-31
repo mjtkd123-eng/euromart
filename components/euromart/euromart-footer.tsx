@@ -4,7 +4,7 @@ import { ShoppingBag, MapPin } from "lucide-react"
 import { useEuromart } from "@/lib/euromart-context"
 
 export function EuromartFooter() {
-  const { regions, regionId, setRegionId, t, cityName } = useEuromart()
+  const { countries, countryCode, selectCountry, t } = useEuromart()
 
   return (
     <footer className="border-t border-border bg-card">
@@ -21,21 +21,20 @@ export function EuromartFooter() {
         <div>
           <p className="mb-3 flex items-center gap-1.5 text-sm font-bold text-foreground">
             <MapPin className="size-4 text-primary" aria-hidden="true" />
-            {t("ourStores")}
+            국가 · Countries
           </p>
           <div className="flex flex-wrap gap-2">
-            {regions.map((r) => (
+            {countries.map((c) => (
               <button
-                key={r.id}
-                onClick={() => setRegionId(r.id)}
+                key={c.code}
+                onClick={() => selectCountry(c.code)}
                 className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
-                  r.id === regionId
+                  c.code === countryCode
                     ? "border-primary bg-primary/10 font-semibold text-primary"
                     : "border-border text-muted-foreground hover:bg-muted"
                 }`}
               >
-                {cityName(r)}
-                <span className="ml-1.5 text-xs opacity-70">{r.countryCode}</span>
+                {c.name}
               </button>
             ))}
           </div>
