@@ -20,14 +20,17 @@ export function EuromartHero() {
           <div className="relative flex flex-col gap-4 p-6 sm:p-10 lg:p-14">
             <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-background/90 px-3 py-1 text-xs font-bold text-primary">
               <Store className="size-3.5" aria-hidden="true" />
-              {countryName} · {storesInCountry.length} stores
+              {countryName} ·{" "}
+              {storesInCountry.length === 1
+                ? t("storeCountOne")
+                : t("storeCount", { count: storesInCountry.length })}
             </span>
 
             <h1 className="max-w-xl text-balance text-3xl font-black leading-tight text-background sm:text-4xl lg:text-5xl">
-              {countryName}의 한인 마트를 선택하세요
+              {t("chooseStoreTitle", { country: countryName })}
             </h1>
             <p className="max-w-lg text-pretty text-sm text-background/85 sm:text-base">
-              Choose a Korean grocery store in {countryName} — 매장을 고르면 상품 목록이 열립니다.
+              {t("chooseStoreSubtitle")}
             </p>
           </div>
         </div>
@@ -56,7 +59,7 @@ export function EuromartHero() {
             className="inline-flex w-fit items-center gap-1.5 rounded-full bg-background/90 px-3 py-1 text-xs font-bold text-primary transition-colors hover:bg-background"
           >
             <ArrowLeft className="size-3.5" aria-hidden="true" />
-            {countryName} 매장 목록
+            {t("backToStoreList", { country: countryName })}
           </button>
 
           <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-background/90 px-3 py-1 text-xs font-bold text-foreground">

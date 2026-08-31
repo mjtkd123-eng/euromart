@@ -77,7 +77,7 @@ export function AccountMenu() {
             onClick={() => setOpen(false)}
           >
             <ScrollText className="size-4 text-primary" aria-hidden="true" />
-            주문 내역 · 환불 신고
+            {t("orderHistory")}
           </Link>
 
           {user.role === "vendor" && (
@@ -98,7 +98,7 @@ export function AccountMenu() {
                 onClick={() => setOpen(false)}
               >
                 <MessageSquareWarning className="size-4 text-primary" aria-hidden="true" />
-                환불·분쟁 관리
+                {t("manageClaims")}
               </Link>
             </>
           )}

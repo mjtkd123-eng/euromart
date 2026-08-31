@@ -21,7 +21,7 @@ export function EuromartFooter() {
         <div>
           <p className="mb-3 flex items-center gap-1.5 text-sm font-bold text-foreground">
             <MapPin className="size-4 text-primary" aria-hidden="true" />
-            국가 · Countries
+            {t("countriesLabel")}
           </p>
           <div className="flex flex-wrap gap-2">
             {countries.map((c) => (

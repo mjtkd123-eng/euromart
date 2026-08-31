@@ -16,7 +16,7 @@ interface CountryGroup {
  * 한국 식료품점 목록에서 매장을 고릅니다.
  */
 export function StoreLocator() {
-  const { regions, region, regionId, setRegionId, t, storeName, cityName } = useEuromart()
+  const { regions, region, regionId, openStore, selectCountry, t, storeName, cityName } = useEuromart()
   const [open, setOpen] = useState(false)
   // null이면 국가 목록을, 값이 있으면 해당 국가의 매장 목록을 보여줍니다.
   const [country, setCountry] = useState<string | null>(null)
@@ -59,7 +59,7 @@ export function StoreLocator() {
   }
 
   function chooseStore(id: string) {
-    setRegionId(id)
+    openStore(id)
     setOpen(false)
     setCountry(null)
   }
@@ -97,7 +97,10 @@ export function StoreLocator() {
                   return (
                     <li key={g.country}>
                       <button
-                        onClick={() => setCountry(g.country)}
+                        onClick={() => {
+                          setCountry(g.country)
+                          selectCountry(g.countryCode)
+                        }}
                         className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-muted ${
                           isCurrent ? "bg-muted" : ""
                         }`}

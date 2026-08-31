@@ -5,7 +5,10 @@ import { useEuromart } from "@/lib/euromart-context"
 import { formatPrice, type Region } from "@/lib/storesData"
 
 function StorePickCard({ store }: { store: Region }) {
-  const { openStore } = useEuromart()
+  const { openStore, lang, t, storeName, cityName } = useEuromart()
+  const name = storeName(store)
+  const city = cityName(store)
+  const subtitle = lang === "ko" ? `${store.store.en} · ${city}` : city
 
   return (
     <button
@@ -27,10 +30,8 @@ function StorePickCard({ store }: { store: Region }) {
       <div className="flex flex-1 flex-col gap-2 p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <h3 className="truncate font-bold leading-tight text-foreground">{store.store.ko}</h3>
-            <p className="truncate text-xs text-muted-foreground">
-              {store.store.en} · {store.city}
-            </p>
+            <h3 className="truncate font-bold leading-tight text-foreground">{name}</h3>
+            <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
           </div>
           <ChevronRight
             className="mt-0.5 size-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary"
@@ -41,14 +42,14 @@ function StorePickCard({ store }: { store: Region }) {
         <div className="mt-auto flex flex-wrap gap-1.5 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1">
             <MapPin className="size-3" aria-hidden="true" />
-            {store.city}, {store.country}
+            {city}, {store.country}
           </span>
           <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1">
             <Truck className="size-3" aria-hidden="true" />
             {formatPrice(store.deliveryFee, store.currency)}
           </span>
           <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1">
-            {store.products.length}개 상품
+            {t("productCount", { count: store.products.length })}
           </span>
         </div>
       </div>
@@ -57,7 +58,7 @@ function StorePickCard({ store }: { store: Region }) {
 }
 
 export function StoreGrid() {
-  const { storesInCountry, countries, countryCode, searchQuery } = useEuromart()
+  const { storesInCountry, countries, countryCode, searchQuery, t, cityName } = useEuromart()
   const countryName = countries.find((c) => c.code === countryCode)?.name ?? ""
 
   const q = searchQuery.trim().toLowerCase()
@@ -68,24 +69,28 @@ export function StoreGrid() {
           s.store.ko.toLowerCase().includes(q) ||
           s.store.en.toLowerCase().includes(q) ||
           s.city.toLowerCase().includes(q) ||
+          cityName(s).toLowerCase().includes(q) ||
           s.country.toLowerCase().includes(q),
       )
+
+  const countLabel =
+    filtered.length === 1 ? t("storeCountOne") : t("storeCount", { count: filtered.length })
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-6">
       <div className="mb-4 flex items-baseline justify-between gap-3">
         <h2 className="flex items-center gap-2 text-lg font-black text-foreground">
           <Store className="size-5 text-primary" aria-hidden="true" />
-          {countryName} 지역 매장
+          {t("regionalStores", { country: countryName })}
         </h2>
-        <span className="text-sm text-muted-foreground">{filtered.length}개 매장</span>
+        <span className="text-sm text-muted-foreground">{countLabel}</span>
       </div>
 
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border bg-card py-16 text-center">
           <Store className="size-10 text-muted-foreground" aria-hidden="true" />
-          <p className="text-sm font-medium text-foreground">이 지역에 등록된 매장이 없습니다</p>
-          <p className="text-xs text-muted-foreground">다른 국가를 선택해 보세요.</p>
+          <p className="text-sm font-medium text-foreground">{t("noStoresTitle")}</p>
+          <p className="text-xs text-muted-foreground">{t("noStoresHint")}</p>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

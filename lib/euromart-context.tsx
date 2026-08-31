@@ -190,6 +190,12 @@ export function EuromartProvider({
     }
   }, [regionId, carts, locale, hydrated])
 
+  // 접근성/SEO: 실제 표시 언어를 <html lang>에 반영합니다.
+  useEffect(() => {
+    const current = getRegion(regions, regionId)
+    document.documentElement.lang = resolveLang(locale, current.countryCode)
+  }, [locale, regionId, regions])
+
   function setRegionId(id: string) {
     const next = regions.find((r) => r.id === id)
     setRegionIdState(id)
