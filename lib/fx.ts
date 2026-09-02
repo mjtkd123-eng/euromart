@@ -1,6 +1,8 @@
 import "server-only"
 import { createClient } from "@/lib/supabase/server"
+import { isSupabaseConfigured } from "@/lib/supabase/config"
 import { createServiceClient } from "@/lib/supabase/service"
+import { DEMO_FX_RATES } from "@/lib/demo-regions"
 import { FX_BASE, type FxRateMap } from "@/lib/fx-shared"
 
 export { FX_BASE, convert, formatConverted, type FxRateMap } from "@/lib/fx-shared"
@@ -214,12 +216,18 @@ export interface FxRefreshResult {
 
 /** 스토어프론트/대시보드가 읽는 캐시된 환율 맵 (EUR → 통화코드). */
 export async function getFxRateMap(): Promise<FxRateMap> {
-  const supabase = await createClient()
-  const { data } = await supabase.from("fx_rates").select("quote, rate").eq("base", FX_BASE)
+  if (!isSupabaseConfigured()) return { ...DEMO_FX_RATES }
 
-  const map: FxRateMap = { [FX_BASE]: 1 }
-  for (const row of data ?? []) map[row.quote] = Number(row.rate)
-  return map
+  try {
+    const supabase = await createClient()
+    const { data } = await supabase.from("fx_rates").select("quote, rate").eq("base", FX_BASE)
+
+    const map: FxRateMap = { [FX_BASE]: 1 }
+    for (const row of data ?? []) map[row.quote] = Number(row.rate)
+    return Object.keys(map).length > 1 ? map : { ...DEMO_FX_RATES }
+  } catch {
+    return { ...DEMO_FX_RATES }
+  }
 }
 
 /**

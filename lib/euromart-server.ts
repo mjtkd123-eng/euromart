@@ -1,5 +1,7 @@
 import "server-only"
 import { createClient } from "@/lib/supabase/server"
+import { isSupabaseConfigured } from "@/lib/supabase/config"
+import { DEMO_REGIONS } from "./demo-regions"
 import type { Region, ResolvedProduct } from "./storesData"
 
 interface CurrencyRow {
@@ -50,6 +52,33 @@ interface RegionProductRow {
  * `Region[]` 형태로 조립합니다. (지역 수가 적어 한 번에 모두 로드)
  */
 export async function fetchRegions(): Promise<Region[]> {
+  if (!isSupabaseConfigured()) {
+    return ensureTwoStoresPerCountry(DEMO_REGIONS.map(cloneRegion))
+  }
+
+  try {
+    return await fetchRegionsFromSupabase()
+  } catch {
+    return ensureTwoStoresPerCountry(DEMO_REGIONS.map(cloneRegion))
+  }
+}
+
+function cloneRegion(region: Region): Region {
+  return {
+    ...region,
+    store: { ...region.store },
+    announcement: { ...region.announcement },
+    hero: {
+      ...region.hero,
+      title: { ...region.hero.title },
+      subtitle: { ...region.hero.subtitle },
+    },
+    currency: { ...region.currency },
+    products: region.products.map((p) => ({ ...p })),
+  }
+}
+
+async function fetchRegionsFromSupabase(): Promise<Region[]> {
   const supabase = await createClient()
 
   const [{ data: regionRows }, { data: productRows }, { data: currencyRows }] = await Promise.all([
@@ -115,6 +144,10 @@ export async function fetchRegions(): Promise<Region[]> {
       products: productsByRegion.get(r.id) ?? [],
     }
   })
+
+  if (mapped.length === 0) {
+    return ensureTwoStoresPerCountry(DEMO_REGIONS.map(cloneRegion))
+  }
 
   // 데모: 국가당 매장이 1개면 두 번째 도시 매장을 복제해 보여 줌
   return ensureTwoStoresPerCountry(mapped)

@@ -1,5 +1,6 @@
 import "server-only"
 import { createClient } from "@/lib/supabase/server"
+import { isSupabaseConfigured } from "@/lib/supabase/config"
 
 export type Role = "customer" | "vendor" | "admin"
 
@@ -12,6 +13,8 @@ export interface SessionProfile {
 
 /** 현재 로그인 사용자와 프로필(역할)을 반환합니다. 없으면 null. */
 export async function getSessionProfile(): Promise<SessionProfile | null> {
+  if (!isSupabaseConfigured()) return null
+
   const supabase = await createClient()
   const {
     data: { user },

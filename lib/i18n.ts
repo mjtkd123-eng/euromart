@@ -1145,16 +1145,6 @@ export function detectLocale(): Locale {
   if (typeof navigator === "undefined") return "en"
 
   const language = (navigator.language ?? "").toLowerCase()
-  let timeZone = ""
-  try {
-    timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? ""
-  } catch {
-    timeZone = ""
-  }
-
-  const koreanLanguage = language.startsWith("ko")
-  // 접속 위치 추정: 브라우저 시간대가 한국인지 확인합니다.
-  const koreanLocation = timeZone === "Asia/Seoul"
-
-  return koreanLanguage && koreanLocation ? "ko" : "en"
+  // 한국어 사용자는 유럽에 있어도 한국어 UI를 봅니다 (v0/라이브와 동일).
+  return language.startsWith("ko") ? "ko" : "en"
 }

@@ -140,7 +140,7 @@ export function EuromartProvider({
   const regions = initialRegions
   const [regionId, setRegionIdState] = useState<string>(regions[0]?.id ?? "")
   const [countryCode, setCountryCode] = useState<string>(regions[0]?.countryCode ?? "")
-  const [browseMode, setBrowseMode] = useState<BrowseMode>("stores")
+  const [browseMode, setBrowseMode] = useState<BrowseMode>("products")
   const [carts, setCarts] = useState<CartsByRegion>({})
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
