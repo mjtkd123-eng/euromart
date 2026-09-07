@@ -5,7 +5,7 @@ import { useEuromart } from "@/lib/euromart-context"
 import { HELP_SECTIONS } from "@/lib/help-center"
 
 export function EuromartFooter() {
-  const { countries, countryCode, selectCountry, t } = useEuromart()
+  const { countries, countryCode, selectCountry, lang, t } = useEuromart()
 
   return (
     <footer className="border-t border-border bg-card">
@@ -53,7 +53,7 @@ export function EuromartFooter() {
                   href={s.href}
                   className="text-xs font-medium text-muted-foreground underline-offset-2 transition-colors hover:text-primary hover:underline"
                 >
-                  {s.label}
+                  {lang === "ko" ? s.label : s.labelEn}
                 </a>
               </li>
             ))}

@@ -24,6 +24,7 @@ export interface FaqItem {
   id: string
   /** 사용자가 실제로 물어볼 법한 대표 질문 */
   question: string
+  questionEn: string
   /** 같은 의도를 나타내는 유사 표현 — 의도 매칭/검색 확장용 */
   intents: string[]
   /**
@@ -31,6 +32,7 @@ export interface FaqItem {
    * 비어 있으면(status: "draft") 챗봇은 상담 안내로 폴백합니다.
    */
   answerDraft: string
+  answerDraftEn: string
   status: FaqStatus
   /** 관련 도움말/정책 링크 (있으면 답변에 함께 노출) */
   link?: string
@@ -40,8 +42,10 @@ export interface FaqCategory {
   id: FaqCategoryId
   /** 표시용 라벨 (한/영 병기) */
   label: string
+  labelEn: string
   /** 카테고리 한 줄 설명 */
   description: string
+  descriptionEn: string
   items: FaqItem[]
 }
 
@@ -113,42 +117,55 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   {
     id: "shipping",
     label: "배송 · Shipping",
+    labelEn: "Shipping",
     description: "배송 방식, 소요 시간, 배송비, 주문 추적",
+    descriptionEn: "Delivery method, timing, fees, and tracking",
     items: [
       {
         id: "shipping-areas",
         question: "어디까지 배송되나요?",
+        questionEn: "Where do you deliver?",
         intents: ["배송 지역", "배송 가능 도시", "우리 동네도 배송되나요", "delivery area"],
         answerDraft: "",
+        answerDraftEn: "",
         status: "draft",
       },
       {
         id: "shipping-time",
         question: "배송은 얼마나 걸리나요?",
+        questionEn: "How long does delivery take?",
         intents: ["배송 시간", "언제 도착", "당일 배송", "delivery time", "how long"],
         answerDraft: "",
+        answerDraftEn: "",
         status: "draft",
       },
       {
         id: "shipping-fee",
         question: "배송비와 무료배송 기준은 어떻게 되나요?",
+        questionEn: "What are the delivery fees and free-delivery threshold?",
         intents: ["배송비", "무료배송", "free delivery", "얼마 이상 무료"],
         answerDraft: "",
+        answerDraftEn: "",
         status: "draft",
       },
       {
         id: "shipping-track",
         question: "주문한 상품은 어떻게 추적하나요?",
+        questionEn: "How do I track my order?",
         intents: ["배송 조회", "주문 추적", "지금 어디", "track order", "Bolt"],
         answerDraft:
           "'내 주문'에서 상태를 확인할 수 있습니다. 상태는 주문 접수 → 포장 완료 → Bolt 배달 호출 대기 → 배달중 → 배달 완료 순으로 갱신됩니다.",
+        answerDraftEn:
+          "You can check status under My orders. It updates as: received → packed → waiting for Bolt courier → out for delivery → delivered.",
         status: "ready",
       },
       {
         id: "shipping-missed",
         question: "배송을 못 받았어요 / 부재중이었어요",
+        questionEn: "I missed the delivery / wasn’t home",
         intents: ["배송 실패", "부재중", "못 받음", "missed delivery"],
         answerDraft: "",
+        answerDraftEn: "",
         status: "draft",
       },
     ],
@@ -156,44 +173,59 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   {
     id: "products",
     label: "상품 · 신선도 · Products & Freshness",
+    labelEn: "Products & freshness",
     description: "재고, 원산지, 보관 방법, 신선식품 품질",
+    descriptionEn: "Stock, origin, storage, and fresh-food quality",
     items: [
       {
         id: "products-freshness",
         question: "신선식품의 신선도는 어떻게 보장되나요?",
+        questionEn: "How do you keep fresh food fresh?",
         intents: ["신선도", "냉장 배송", "콜드체인", "freshness", "신선식품 품질"],
         answerDraft:
           "상품은 실온·냉장·냉동으로 구분해 보관·배송하며, 냉장·냉동 식품은 콜드체인으로 관리됩니다.",
+        answerDraftEn:
+          "Items are stored and shipped at ambient, chilled, or frozen temperature. Chilled and frozen food stays on a cold chain.",
         status: "ready",
       },
       {
         id: "products-storage",
         question: "상품 보관 방법(실온/냉장/냉동)은 어디서 확인하나요?",
+        questionEn: "Where can I see storage instructions (ambient / chilled / frozen)?",
         intents: ["보관 방법", "냉동인가요", "냉장 보관", "storage", "실온"],
         answerDraft:
           "각 상품 상세 페이지에 보관 방법(실온/냉장/냉동)과 원산지, 용량 등이 표시됩니다.",
+        answerDraftEn:
+          "Each product page shows storage (ambient / chilled / frozen), origin, and pack size.",
         status: "ready",
       },
       {
         id: "products-origin",
         question: "원산지나 원재료·알레르기 정보를 알고 싶어요",
+        questionEn: "Where can I find origin, ingredients, and allergen info?",
         intents: ["원산지", "원재료", "알레르기", "성분", "origin", "allergen"],
         answerDraft:
           "상품 상세 페이지에서 원산지와 원재료·알레르기 정보를 확인할 수 있습니다. EU 식품 표시 규정을 따릅니다.",
+        answerDraftEn:
+          "Origin, ingredients, and allergen information are on the product page. We follow EU food-labelling rules.",
         status: "ready",
       },
       {
         id: "products-stock",
         question: "품절된 상품은 언제 다시 입고되나요?",
+        questionEn: "When will a sold-out item be back in stock?",
         intents: ["재입고", "품절", "언제 들어와요", "restock", "out of stock"],
         answerDraft: "",
+        answerDraftEn: "",
         status: "draft",
       },
       {
         id: "products-quality-issue",
         question: "받은 상품의 품질에 문제가 있어요 (파손/상함)",
+        questionEn: "The item I received is damaged or spoiled",
         intents: ["파손", "상했어요", "품질 불량", "damaged", "spoiled"],
         answerDraft: "",
+        answerDraftEn: "",
         status: "draft",
         link: "/help/payment",
       },
@@ -202,47 +234,62 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   {
     id: "payment",
     label: "결제 · 주문 · Payment & Orders",
+    labelEn: "Payment & orders",
     description: "결제 수단, 결제 오류, 통화·환율, 주문 변경",
+    descriptionEn: "Payment methods, checkout errors, currency, and order changes",
     items: [
       {
         id: "payment-methods",
         question: "어떤 결제 수단을 사용할 수 있나요?",
+        questionEn: "Which payment methods can I use?",
         intents: ["결제 수단", "카드 종류", "간편결제", "payment method"],
         answerDraft: "",
+        answerDraftEn: "",
         status: "draft",
       },
       {
         id: "payment-declined",
         question: "결제가 거절되었어요",
+        questionEn: "My payment was declined",
         intents: ["결제 거절", "결제 안 됨", "카드 오류", "declined", "3D Secure"],
         answerDraft:
           "잔액·해외결제 차단·3D Secure 인증 실패가 흔한 원인입니다. 결제 도움말 센터에서 단계별 해결 방법을 안내합니다.",
+        answerDraftEn:
+          "Common causes are insufficient funds, overseas payments blocked, or a failed 3D Secure check. The payment help pages walk through each step.",
         status: "ready",
         link: "/help/payment",
       },
       {
         id: "payment-currency",
         question: "결제 통화와 환산 금액이 왜 다른가요?",
+        questionEn: "Why doesn’t the converted amount match the charge?",
         intents: ["통화", "환율", "환산 금액", "currency", "exchange rate"],
         answerDraft:
           "결제는 매장의 현지 통화로 청구되며, 다른 통화 표시는 참고용 환산가입니다. 카드사 환전 수수료가 더해질 수 있습니다.",
+        answerDraftEn:
+          "You are charged in the store’s local currency. Other currencies are estimates, and your bank may add FX fees.",
         status: "ready",
         link: "/help/payment",
       },
       {
         id: "payment-double",
         question: "결제가 이중으로 청구된 것 같아요",
+        questionEn: "I think I was charged twice",
         intents: ["이중 결제", "중복 청구", "두 번 결제", "double charge"],
         answerDraft:
           "대부분 실제 청구가 아닌 임시 승인(가승인)으로, 보통 며칠 내 자동 취소됩니다. 유지되면 주문번호와 함께 고객센터로 문의해 주세요.",
+        answerDraftEn:
+          "Most duplicate lines are temporary authorizations and drop off within a few days. If they remain, contact support with your order number.",
         status: "ready",
         link: "/help/payment",
       },
       {
         id: "order-change",
         question: "주문을 변경하거나 취소할 수 있나요?",
+        questionEn: "Can I change or cancel an order?",
         intents: ["주문 변경", "주문 취소", "수량 변경", "cancel order", "modify"],
         answerDraft: "",
+        answerDraftEn: "",
         status: "draft",
       },
     ],
@@ -250,45 +297,60 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   {
     id: "returns",
     label: "교환 · 환불 · Returns & Refunds",
+    labelEn: "Returns & refunds",
     description: "청약철회, 환불 절차·기간, 신선식품 예외, 분쟁",
+    descriptionEn: "Withdrawal rights, refund timing, fresh-food exceptions, and disputes",
     items: [
       {
         id: "returns-policy",
         question: "교환·환불 정책이 어떻게 되나요?",
+        questionEn: "What is the exchange and refund policy?",
         intents: ["환불 정책", "교환", "반품", "청약철회", "return policy"],
         answerDraft:
           "EU 규정에 따라 수령일로부터 14일 이내 청약철회가 원칙이나, 개봉했거나 상하기 쉬운 신선·냉장·냉동 식품은 예외가 적용될 수 있습니다.",
+        answerDraftEn:
+          "EU rules give a 14-day right of withdrawal from delivery, with exceptions for opened or perishable fresh, chilled, and frozen food.",
         status: "ready",
       },
       {
         id: "returns-how",
         question: "환불은 어떻게 신청하나요?",
+        questionEn: "How do I request a refund?",
         intents: ["환불 신청", "반품 방법", "환불 요청", "how to refund"],
         answerDraft: "",
+        answerDraftEn: "",
         status: "draft",
       },
       {
         id: "returns-time",
         question: "환불은 언제 처리되나요?",
+        questionEn: "When will I get my refund?",
         intents: ["환불 기간", "언제 돌려받나요", "환불 소요일", "refund time"],
         answerDraft:
           "결제 완료 전 취소된 건은 청구 자체가 없습니다. 이미 청구된 주문의 환불 반영 기간은 카드사 정산 주기를 따릅니다.",
+        answerDraftEn:
+          "Cancellations before payment completes are never charged. Refunds of captured payments follow your card issuer’s settlement cycle.",
         status: "ready",
         link: "/help/payment",
       },
       {
         id: "returns-fresh",
         question: "신선식품도 환불되나요?",
+        questionEn: "Can I get a refund on fresh food?",
         intents: ["신선식품 환불", "냉장 환불", "식품 반품", "fresh food refund"],
         answerDraft:
           "신선·냉장·냉동 식품은 특성상 개봉 시 환불이 제한될 수 있습니다. 품질 문제라면 사진과 주문번호로 문의해 주세요.",
+        answerDraftEn:
+          "Opened fresh, chilled, or frozen food may not be refundable. For quality issues, contact us with photos and your order number.",
         status: "ready",
       },
       {
         id: "returns-dispute",
         question: "환불이 거절됐어요 / 판매자와 분쟁이 있어요",
+        questionEn: "My refund was refused / I have a dispute with the seller",
         intents: ["환불 거절", "분쟁", "이의 제기", "중재", "dispute", "claim"],
         answerDraft: "",
+        answerDraftEn: "",
         status: "draft",
       },
     ],
@@ -329,7 +391,7 @@ export function matchFaq(userText: string): FaqItem | undefined {
   let best: { item: FaqItem; score: number } | undefined
   for (const category of FAQ_CATEGORIES) {
     for (const item of category.items) {
-      const haystack = [item.question, ...item.intents].map((s) => s.toLowerCase())
+      const haystack = [item.question, item.questionEn, ...item.intents].map((s) => s.toLowerCase())
       const score = haystack.reduce((acc, phrase) => {
         return acc + (text.includes(phrase) || phrase.includes(text) ? phrase.length : 0)
       }, 0)
@@ -343,9 +405,14 @@ export function matchFaq(userText: string): FaqItem | undefined {
  * 매칭된 FAQ로부터 챗봇 응답 문자열을 구성합니다.
  * 답변 초안이 없으면 상담 폴백 메시지를 반환합니다.
  */
-export function buildFaqReply(item: FaqItem): string {
-  if (item.status === "ready" && item.answerDraft.trim() !== "") {
-    return item.link ? `${item.answerDraft}\n\n자세히 보기: ${item.link}` : item.answerDraft
+export function buildFaqReply(item: FaqItem, lang: "ko" | "en" = "ko"): string {
+  const answer = lang === "en" ? item.answerDraftEn : item.answerDraft
+  const ready = item.status === "ready" && answer.trim() !== ""
+  if (ready) {
+    const more = lang === "en" ? "Learn more" : "자세히 보기"
+    return item.link ? `${answer}\n\n${more}: ${item.link}` : answer
   }
-  return `해당 문의는 매장·정책에 따라 다를 수 있어 확인 후 정확히 안내드리겠습니다. 급하시면 주문번호와 함께 ${PLATFORM_FACTS.support}`
+  return lang === "en"
+    ? `This depends on the store and current policy — we’ll confirm and get back to you. For urgent cases, include your order number: ${PLATFORM_FACTS.support}`
+    : `해당 문의는 매장·정책에 따라 다를 수 있어 확인 후 정확히 안내드리겠습니다. 급하시면 주문번호와 함께 ${PLATFORM_FACTS.support}`
 }
