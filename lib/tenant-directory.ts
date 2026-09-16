@@ -119,7 +119,7 @@ async function empty(): Promise<DirectoryFile> {
 
 let writeQueue: Promise<void> = Promise.resolve()
 
-async function load(): Promise<DirectoryFile> {
+async function loadUnlocked(): Promise<DirectoryFile> {
   try {
     const raw = await readFile(FILE, "utf8")
     return JSON.parse(raw) as DirectoryFile
@@ -135,13 +135,8 @@ async function persist(data: DirectoryFile): Promise<void> {
   await writeFile(FILE, JSON.stringify(data, null, 2), { encoding: "utf8", mode: 0o600 })
 }
 
-function mutate<T>(fn: (data: DirectoryFile) => Promise<T> | T): Promise<T> {
-  const run = writeQueue.then(async () => {
-    const data = await load()
-    const result = await fn(data)
-    await persist(data)
-    return result
-  })
+function runExclusive<T>(fn: () => Promise<T>): Promise<T> {
+  const run = writeQueue.then(fn)
   writeQueue = run.then(
     () => undefined,
     () => undefined,
@@ -149,42 +144,50 @@ function mutate<T>(fn: (data: DirectoryFile) => Promise<T> | T): Promise<T> {
   return run
 }
 
+function mutate<T>(fn: (data: DirectoryFile) => Promise<T> | T): Promise<T> {
+  return runExclusive(async () => {
+    const data = await loadUnlocked()
+    const result = await fn(data)
+    await persist(data)
+    return result
+  })
+}
+
+function read<T>(fn: (data: DirectoryFile) => T): Promise<T> {
+  return runExclusive(async () => fn(await loadUnlocked()))
+}
+
 export async function listApplications(): Promise<DirectoryApplication[]> {
-  const data = await load()
-  return [...data.applications].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+  return read((data) => [...data.applications].sort((a, b) => b.createdAt.localeCompare(a.createdAt)))
 }
 
 export async function listStores(): Promise<DirectoryStore[]> {
-  const data = await load()
-  return [...data.stores].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+  return read((data) => [...data.stores].sort((a, b) => b.createdAt.localeCompare(a.createdAt)))
 }
 
 export async function listOwners(): Promise<Omit<DirectoryUser, "passwordHash">[]> {
-  const data = await load()
-  return data.users
-    .filter((u) => u.role === "vendor")
-    .map(({ passwordHash: _h, ...rest }) => rest)
+  return read((data) =>
+    data.users
+      .filter((u) => u.role === "vendor")
+      .map(({ passwordHash: _h, ...rest }) => rest),
+  )
 }
 
 export async function listMailOutbox(): Promise<MailOutboxRow[]> {
-  const data = await load()
-  return [...data.mail].slice(0, 20)
+  return read((data) => [...data.mail].slice(0, 20))
 }
 
 export async function findUserByEmail(email: string): Promise<DirectoryUser | null> {
-  const data = await load()
   const needle = email.trim().toLowerCase()
-  return data.users.find((u) => u.email.toLowerCase() === needle) ?? null
+  return read((data) => data.users.find((u) => u.email.toLowerCase() === needle) ?? null)
 }
 
 export async function findUserById(id: string): Promise<DirectoryUser | null> {
-  const data = await load()
-  return data.users.find((u) => u.id === id) ?? null
+  return read((data) => data.users.find((u) => u.id === id) ?? null)
 }
 
 export async function findStoreById(id: string): Promise<DirectoryStore | null> {
-  const data = await load()
-  return data.stores.find((s) => s.id === id) ?? null
+  return read((data) => data.stores.find((s) => s.id === id) ?? null)
 }
 
 export async function authenticateDirectory(
@@ -261,13 +264,20 @@ export async function createStoreAndOwner(input: CreateStoreInput): Promise<Crea
       createdAt: now,
     }
 
+    let passwordHash: string
+    try {
+      passwordHash = await hashPassword(temporaryPassword)
+    } catch {
+      return { error: "비밀번호 해시 생성에 실패했습니다. 다시 발급하세요." }
+    }
+
     const owner: DirectoryUser = {
       id: userId,
       email,
       fullName: input.ownerName.trim() || email,
       role: "vendor",
       storeId,
-      passwordHash: await hashPassword(temporaryPassword),
+      passwordHash,
       mustChangePassword: true,
       passwordChangedAt: null,
       createdAt: now,

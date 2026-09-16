@@ -13,8 +13,9 @@ function VendorLoginForm() {
   const router = useRouter()
   const params = useSearchParams()
   const next = params.get("next")
-  const [email, setEmail] = useState("")
+  const [email, setEmail] = useState(params.get("email") ?? "")
   const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -44,12 +45,14 @@ function VendorLoginForm() {
       title="업주 · 본부 로그인"
       subtitle="마트 업주 계정은 본부 심사 후 발급됩니다. 고객 회원가입과 분리되어 있습니다."
     >
-      <form onSubmit={(e) => void onSubmit(e)} className="flex flex-col gap-5">
+      <form onSubmit={(e) => void onSubmit(e)} className="flex flex-col gap-5" autoComplete="on">
         <div className="grid gap-2">
           <Label htmlFor="email">이메일</Label>
           <Input
             id="email"
+            name="vendor-email"
             type="email"
+            inputMode="email"
             autoComplete="username"
             required
             value={email}
@@ -58,15 +61,28 @@ function VendorLoginForm() {
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="password">비밀번호</Label>
+          <div className="flex items-center justify-between gap-2">
+            <Label htmlFor="password">비밀번호</Label>
+            <button
+              type="button"
+              className="text-xs font-medium text-primary underline-offset-4 hover:underline"
+              onClick={() => setShowPassword((v) => !v)}
+            >
+              {showPassword ? "숨기기" : "비밀번호 표시"}
+            </button>
+          </div>
           <Input
             id="password"
-            type="password"
+            name="vendor-password"
+            type={showPassword ? "text" : "password"}
             autoComplete="current-password"
+            spellCheck={false}
+            autoCapitalize="off"
+            autoCorrect="off"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="h-11"
+            className="h-11 font-mono"
           />
         </div>
         {error && (

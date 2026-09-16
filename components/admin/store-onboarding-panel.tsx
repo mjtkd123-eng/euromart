@@ -1,12 +1,13 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
+import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { FormNotice } from "@/components/vendor/form-notice"
-import { Building2, KeyRound, Mail, ShieldCheck } from "lucide-react"
+import { Building2, Copy, KeyRound, Mail, ShieldCheck } from "lucide-react"
 
 type Application = {
   id: string
@@ -52,6 +53,7 @@ export function StoreOnboardingPanel() {
   const [error, setError] = useState<string | null>(null)
   const [ok, setOk] = useState<string | null>(null)
   const [issued, setIssued] = useState<Issued | null>(null)
+  const [copied, setCopied] = useState<"email" | "password" | null>(null)
   const [busy, setBusy] = useState(false)
 
   const [form, setForm] = useState({
@@ -93,8 +95,19 @@ export function StoreOnboardingPanel() {
       applicationId: app.id,
     })
     setIssued(null)
+    setCopied(null)
     setOk("서류 내용을 발급 폼에 채웠습니다. 검토 후 계정을 발급하세요.")
     setError(null)
+  }
+
+  async function copyHandoff(field: "email" | "password", value: string) {
+    try {
+      await navigator.clipboard.writeText(value)
+      setCopied(field)
+      window.setTimeout(() => setCopied(null), 2000)
+    } catch {
+      setError("클립보드에 복사하지 못했습니다. 필드를 직접 선택해 복사하세요.")
+    }
   }
 
   async function reject(id: string) {
@@ -175,17 +188,27 @@ export function StoreOnboardingPanel() {
             <KeyRound className="size-4" aria-hidden="true" />
             오프라인 인계용 임시 비밀번호 (재조회 불가)
           </p>
-          <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
-            <div>
-              <dt className="text-xs text-muted-foreground">업주 이메일</dt>
-              <dd className="font-mono">{issued.email}</dd>
-            </div>
-            <div>
-              <dt className="text-xs text-muted-foreground">임시 비밀번호</dt>
-              <dd className="font-mono text-base font-bold">{issued.temporaryPassword}</dd>
-            </div>
-          </dl>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <HandoffField
+              label="업주 이메일"
+              value={issued.email}
+              copied={copied === "email"}
+              onCopy={() => void copyHandoff("email", issued.email)}
+            />
+            <HandoffField
+              label="임시 비밀번호"
+              value={issued.temporaryPassword}
+              copied={copied === "password"}
+              onCopy={() => void copyHandoff("password", issued.temporaryPassword)}
+            />
+          </div>
           <p className="mt-3 break-all text-xs text-muted-foreground">설정 링크: {issued.inviteUrl}</p>
+          <Link
+            href={`/vendor/login?email=${encodeURIComponent(issued.email)}`}
+            className="mt-3 inline-flex text-sm font-semibold text-primary underline-offset-4 hover:underline"
+          >
+            이 이메일로 업주 로그인 열기
+          </Link>
         </div>
       )}
 
@@ -293,6 +316,36 @@ export function StoreOnboardingPanel() {
           비밀번호 컬럼은 없습니다. 소유자 목록에도 해시·평문이 노출되지 않습니다.
         </p>
       </section>
+    </div>
+  )
+}
+
+function HandoffField({
+  label,
+  value,
+  copied,
+  onCopy,
+}: {
+  label: string
+  value: string
+  copied: boolean
+  onCopy: () => void
+}) {
+  return (
+    <div className="grid gap-1.5">
+      <Label className="text-xs text-muted-foreground">{label}</Label>
+      <div className="flex gap-2">
+        <Input
+          readOnly
+          value={value}
+          onFocus={(e) => e.currentTarget.select()}
+          className="h-10 font-mono text-base font-bold"
+        />
+        <Button type="button" variant="outline" size="sm" className="h-10 shrink-0" onClick={onCopy}>
+          <Copy className="size-3.5" aria-hidden="true" />
+          {copied ? "복사됨" : "복사"}
+        </Button>
+      </div>
     </div>
   )
 }

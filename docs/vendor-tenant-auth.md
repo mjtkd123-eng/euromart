@@ -24,6 +24,8 @@ See `supabase/migrations/20260917_vendor_tenant_auth.sql`.
 
 Passwords: **bcrypt** (cost 12) via GoTrue (`auth.users`) in production, or `bcryptjs` in the demo directory. Super Admin never has a select path to a plaintext password.
 
+Temporary passwords are 16-character unambiguous alphanumerics (no `+`, `O`, `0`, `I`, `l`, `1`). The issuer UI copies them as selectable text; the hash is verified against the same string before the row is saved.
+
 ## APIs
 
 | Method | Path | Who |

@@ -17,6 +17,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  serverExternalPackages: ["bcryptjs"],
 }
 
 export default nextConfig

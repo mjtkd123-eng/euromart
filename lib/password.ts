@@ -1,34 +1,49 @@
-import bcrypt from "bcryptjs"
+import { compare, hash, hashSync } from "bcryptjs"
 import { randomBytes, createHash, timingSafeEqual } from "node:crypto"
 
 /** Production cost. Demo still uses 12 — creation is an admin action, not a hot path. */
 const BCRYPT_ROUNDS = 12
 
-const DUMMY_HASH = bcrypt.hashSync("not-a-real-password", 8)
+const DUMMY_HASH = hashSync("not-a-real-password", 8)
+
+/** Unambiguous alphabet — no +/O/0/I/l/1 so handoff and OCR cannot swap characters. */
+const UPPER = "ABCDEFGHJKLMNPQRSTUVWXYZ"
+const LOWER = "abcdefghijkmnopqrstuvwxyz"
+const DIGITS = "23456789"
+const TEMP_ALPHABET = UPPER + LOWER + DIGITS
 
 export async function hashPassword(plain: string): Promise<string> {
-  return bcrypt.hash(plain, BCRYPT_ROUNDS)
+  const digest = await hash(plain, BCRYPT_ROUNDS)
+  if (!(await verifyPassword(plain, digest))) {
+    throw new Error("bcrypt round-trip failed")
+  }
+  return digest
 }
 
-export async function verifyPassword(plain: string, hash: string | null | undefined): Promise<boolean> {
-  const target = hash && hash.startsWith("$2") ? hash : DUMMY_HASH
-  const ok = await bcrypt.compare(plain, target)
-  return Boolean(hash) && ok
+export async function verifyPassword(plain: string, storedHash: string | null | undefined): Promise<boolean> {
+  const target = storedHash && storedHash.startsWith("$2") ? storedHash : DUMMY_HASH
+  const ok = await compare(plain, target)
+  return Boolean(storedHash) && ok
 }
 
 /** High-entropy one-time password shown to Super Admin once (never persisted in plain text). */
 export function generateTemporaryPassword(length = 16): string {
-  const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ"
-  const lower = "abcdefghijkmnopqrstuvwxyz"
-  const digits = "23456789"
-  const symbols = "!@#$%+"
-  const all = upper + lower + digits + symbols
-  const bytes = randomBytes(length)
-  const chars = Array.from(bytes, (b) => all[b % all.length])
-  chars[0] = upper[bytes[0] % upper.length]
-  chars[1] = lower[bytes[1] % lower.length]
-  chars[2] = digits[bytes[2] % digits.length]
-  chars[3] = symbols[bytes[3] % symbols.length]
+  const size = Math.max(length, 12)
+  const bytes = randomBytes(size + size)
+  const chars: string[] = [
+    UPPER[bytes[0] % UPPER.length],
+    LOWER[bytes[1] % LOWER.length],
+    DIGITS[bytes[2] % DIGITS.length],
+  ]
+  for (let i = 3; i < size; i++) {
+    chars.push(TEMP_ALPHABET[bytes[i] % TEMP_ALPHABET.length])
+  }
+  for (let i = chars.length - 1; i > 0; i--) {
+    const j = bytes[size + i] % (i + 1)
+    const tmp = chars[i]
+    chars[i] = chars[j]
+    chars[j] = tmp
+  }
   return chars.join("")
 }
 

@@ -18,6 +18,16 @@ describe("password hashing", () => {
     assert.equal(pwd.length >= 16, true)
     assert.equal(isStrongPassword(pwd), true)
   })
+
+  it("temporary passwords are unambiguous and verify against their own hash", async () => {
+    const allowed = /^[ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789]+$/
+    for (let i = 0; i < 3; i++) {
+      const pwd = generateTemporaryPassword()
+      assert.equal(allowed.test(pwd), true)
+      assert.equal(/[+O0Il1!@#$%]/.test(pwd), false)
+      assert.equal(await verifyPassword(pwd, await hashPassword(pwd)), true)
+    }
+  })
 })
 
 describe("store_id tenant guard", () => {
