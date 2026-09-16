@@ -1,10 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
-import { Mail, Clock, Languages, MessageCircle, Bot, CheckCircle2, Send } from "lucide-react"
+import { Mail, Clock, Languages, Bot, CheckCircle2, Send } from "lucide-react"
 import { CONTACT, INQUIRY_TOPICS, helpText } from "@/lib/help-center"
 import { useEuromart } from "@/lib/euromart-context"
+import { CsChat } from "@/components/help/cs-chat"
 
 export function ContactView() {
   const { lang, t } = useEuromart()
@@ -21,8 +21,10 @@ export function ContactView() {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-      <section className="rounded-2xl border border-border bg-card p-6">
+    <div className="flex flex-col gap-6">
+      <CsChat />
+      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+      <section id="human-agent" className="scroll-mt-24 rounded-2xl border border-border bg-card p-6">
         <h2 className="text-base font-bold">{t("contactFormTitle")}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           {t("contactFormDesc")} {helpText(CONTACT.responseTime, lang)}
@@ -128,13 +130,7 @@ export function ContactView() {
             {t("chatbotTitle")}
           </h2>
           <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{t("chatbotDesc")}</p>
-          <Link
-            href="/help/faq"
-            className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            <MessageCircle className="size-4" aria-hidden="true" />
-            {t("viewFaq")}
-          </Link>
+          <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{t("csDemoHint")}</p>
         </div>
 
         <div className="rounded-2xl border border-border bg-muted/40 p-6">
@@ -164,6 +160,7 @@ export function ContactView() {
           </ul>
         </div>
       </aside>
+    </div>
     </div>
   )
 }

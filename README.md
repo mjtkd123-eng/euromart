@@ -48,3 +48,9 @@ CRON_SECRET=
 ```
 
 FX and payment flow is documented in `docs/architecture-fx-payments.md`.
+
+## CS chatbot (Bolt delivery)
+
+The Help Center and storefront include a 1:1 CS chat that follows the mart × Bolt support policy. It looks up demo orders with `get_order_status` (try **KEM-12345**) and hands complex refunds to a human form.
+
+Open `/help/contact` or the **상담하기** button on the shop.

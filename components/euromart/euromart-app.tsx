@@ -14,6 +14,7 @@ import { EuromartFooter } from "./euromart-footer"
 import { AuthPromptDialog } from "./auth-prompt-dialog"
 import { SignUpModal } from "./sign-up-modal"
 import { ProductDetailDialog } from "./product-detail-dialog"
+import { CsChatWidget } from "@/components/help/cs-chat-widget"
 
 function EuromartMain() {
   const { browseMode } = useEuromart()
@@ -53,6 +54,7 @@ export function EuromartApp({
         <AuthPromptDialog />
         <SignUpModal />
         <ProductDetailDialog />
+        <CsChatWidget />
       </div>
     </EuromartProvider>
   )

@@ -805,6 +805,28 @@ const dict = {
     en: "Send a 1:1 inquiry or use the chatbot. Including your order number helps us help you faster.",
   },
   customerCenter: { ko: "고객센터", en: "Support" },
+  csTitle: { ko: "K-EuroMart × Bolt 상담", en: "K-EuroMart × Bolt chat" },
+  csSubtitle: { ko: "1:1 CS · 주문·배송 실시간 안내", en: "1:1 CS · live order & delivery help" },
+  csOpen: { ko: "상담하기", en: "Chat with us" },
+  csClose: { ko: "닫기", en: "Close" },
+  csSend: { ko: "보내기", en: "Send" },
+  csTyping: { ko: "답변을 작성하고 있습니다…", en: "Writing a reply…" },
+  csPlaceholder: { ko: "주문번호나 문의 내용을 입력하세요", en: "Type an order number or question" },
+  csInputLabel: { ko: "상담 메시지", en: "Support message" },
+  csHuman: { ko: "상담원 연결", en: "Talk to an agent" },
+  csHumanShort: { ko: "상담원", en: "Agent" },
+  csSendError: {
+    ko: "일시적으로 연결되지 않았습니다. 잠시 후 다시 시도해 주세요.",
+    en: "We couldn’t reach support just now. Please try again in a moment.",
+  },
+  csFallbackHello: {
+    ko: "안녕하세요. 배송 조회는 주문번호를, 그 밖의 문의는 아래 버튼을 눌러 주세요.",
+    en: "Hi. Send an order number to track a delivery, or tap a quick reply.",
+  },
+  csDemoHint: {
+    ko: "데모 주문번호: KEM-12345 (배송 중), KEM-8888 (준비 중), KEM-7777 (라이더 배정), KEM-1001 (완료).",
+    en: "Demo orders: KEM-12345 (out for delivery), KEM-8888 (preparing), KEM-7777 (rider assigned), KEM-1001 (completed).",
+  },
 
   /* --- 도시명 --- */
   /**

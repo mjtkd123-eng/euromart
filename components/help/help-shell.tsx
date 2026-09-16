@@ -18,6 +18,7 @@ import {
 import { HELP_SECTIONS, sectionLabel, type HelpSectionId } from "@/lib/help-center"
 import { useEuromart } from "@/lib/euromart-context"
 import { LanguageSelector } from "@/components/euromart/language-selector"
+import { CsChatWidget } from "@/components/help/cs-chat-widget"
 
 const ICONS: Record<string, LucideIcon> = {
   "help-circle": HelpCircle,
@@ -106,6 +107,7 @@ export function HelpShell({ active, children }: HelpShellProps) {
       </div>
 
       <main className="mx-auto max-w-5xl px-4 py-8 sm:py-10">{children}</main>
+      {pathname !== "/help/contact" && <CsChatWidget />}
     </div>
   )
 }
