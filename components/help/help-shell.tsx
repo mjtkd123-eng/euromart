@@ -13,6 +13,7 @@ import {
   Megaphone,
   Scale,
   MessageCircle,
+  ShieldAlert,
   type LucideIcon,
 } from "lucide-react"
 import { HELP_SECTIONS, sectionLabel, type HelpSectionId } from "@/lib/help-center"
@@ -28,6 +29,7 @@ const ICONS: Record<string, LucideIcon> = {
   megaphone: Megaphone,
   scale: Scale,
   "message-circle": MessageCircle,
+  "shield-alert": ShieldAlert,
 }
 
 interface HelpShellProps {

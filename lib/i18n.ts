@@ -792,6 +792,10 @@ const dict = {
     ko: "EU 소비자 권리에 기반한 청약철회권과 신선식품 예외, 파손·변질 상품 보상 기준을 확인하세요.",
     en: "EU withdrawal rights, fresh-food exceptions, and how we handle damaged or spoiled items.",
   },
+  claimsPageDesc: {
+    ko: "€20 / ₩30,000 이하 즉시 환불, 매장 2시간 응답, 식중독·알레르기는 플랫폼이 바로 접수합니다.",
+    en: "Instant refunds under €20 / ₩30,000, a 2-hour store SLA, and food-safety cases that skip the merchant.",
+  },
   legalPageDesc: {
     ko: "이용약관과 개인정보 처리방침을 확인하세요. 개인정보 처리는 EU GDPR을 준수합니다.",
     en: "Read our terms of service and privacy policy. We process personal data under EU GDPR.",

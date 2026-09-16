@@ -19,6 +19,7 @@ export type HelpSectionId =
   | "shipping"
   | "payment"
   | "returns"
+  | "claims"
   | "legal"
   | "notice"
   | "contact"
@@ -34,6 +35,7 @@ export interface HelpSection {
     | "shippingPageDesc"
     | "paymentPageDesc"
     | "returnsPageDesc"
+    | "claimsPageDesc"
     | "legalPageDesc"
     | "noticePageDesc"
     | "contactPageDesc"
@@ -81,6 +83,16 @@ export const HELP_SECTIONS: HelpSection[] = [
     pageDescKey: "returnsPageDesc",
     icon: "rotate-ccw",
     href: "/help/returns",
+  },
+  {
+    id: "claims",
+    label: "클레임 처리 기준",
+    labelEn: "Claims",
+    description: "금액대별 즉시 환불, 매장 2시간 SLA, 식중독·알레르기 등 고위험 이관 기준.",
+    descriptionEn: "Instant micro refunds, the 2-hour store SLA, and high-risk food-safety escalation.",
+    pageDescKey: "claimsPageDesc",
+    icon: "shield-alert",
+    href: "/help/claims",
   },
   {
     id: "notice",
@@ -770,6 +782,13 @@ export const LEGAL_DOCS: LegalDoc[] = [
           ko: "개인정보는 수집·이용 목적이 달성되면 지체 없이 파기합니다. 단, 관련 법령이 정한 기간(예: 전자상거래·세무 기록) 동안은 보관합니다.",
           en: "We delete personal data when the purpose is fulfilled, except where law requires longer retention (for example e-commerce or tax records).",
         },
+        points: [
+          { ko: "클레임 설명·주소 스냅샷: 사건 종결 후 24개월 → 마스킹(redacted)", en: "Claim description and address snapshot: 24 months after close, then masked to “redacted”" },
+          { ko: "증빙 사진: 종결 후 24개월 → 스토리지 객체 삭제", en: "Evidence photos: 24 months after close, then storage objects are deleted" },
+          { ko: "식중독 진단서: 종결 후 36개월 → 삭제", en: "Medical certificates: 36 months after close, then deleted" },
+          { ko: "통화 메타데이터: 6개월 → 삭제", en: "Call metadata: 6 months, then deleted" },
+          { ko: "정산·세무 기록: 7년 보관 (고객 사진 없음)", en: "Settlement and tax records: 7 years (no customer photos)" },
+        ],
       },
       {
         heading: { ko: "5. 정보주체의 권리 (Your Rights)", en: "5. Your rights" },

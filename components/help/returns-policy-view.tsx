@@ -53,6 +53,11 @@ export function ReturnsPolicyView() {
         <div>
           <h2 className="text-base font-bold">{t("returnsCtaTitle")}</h2>
           <p className="mt-1 text-sm text-muted-foreground">{t("returnsCtaDesc")}</p>
+          <p className="mt-2 text-sm">
+            <Link href="/help/claims" className="font-semibold text-primary hover:underline">
+              {lang === "ko" ? "금액대별 클레임 처리 기준 보기 →" : "See claim routing by amount →"}
+            </Link>
+          </p>
           <p className="mt-1 text-xs text-muted-foreground">
             {t("customerCenter")} {CONTACT.email} · {helpText(CONTACT.hours, lang)}
           </p>

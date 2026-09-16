@@ -54,3 +54,16 @@ FX and payment flow is documented in `docs/architecture-fx-payments.md`.
 The Help Center and storefront include a 1:1 CS chat that follows the mart × Bolt support policy. It looks up demo orders with `get_order_status` (try **KEM-12345**) and hands complex refunds to a human form.
 
 Open `/help/contact` or the **상담하기** button on the shop.
+
+## Hybrid CS, claims & insurance
+
+Claim routing (micro / medium / high, 2-hour merchant SLA, food-safety Tier 2, FDS, GDPR retention) is specified in `docs/prd-hybrid-cs-claims.md`.
+
+- Schema: `supabase/migrations/20260916_hybrid_cs_claims.sql` (`claims`, `escalations`, `settlements`, `fds_logs`)
+- Engine: `lib/claims-routing.ts`
+- Preview the same rules in the Help Center: `/help/claims`
+- Crons (Bearer `CRON_SECRET`): `/api/cron/sweep-claim-sla` every 5 minutes, `/api/cron/gdpr-retention` daily 05:00 UTC
+
+```bash
+pnpm test:claims
+```
