@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation"
 import type { Metadata } from "next"
-import { getSessionProfile } from "@/lib/auth"
+import { requireStoreOwner } from "@/lib/auth"
 import { getVendorDashboard } from "@/lib/vendor-server"
 import { formatPrice } from "@/lib/storesData"
 import { DashboardShell, StatStrip } from "@/components/dashboard/dashboard-shell"
@@ -12,9 +11,7 @@ export const metadata: Metadata = {
 }
 
 export default async function VendorPage() {
-  const profile = await getSessionProfile()
-  if (!profile) redirect("/auth/login?next=/vendor")
-  if (profile.role !== "vendor" && profile.role !== "admin") redirect("/")
+  const profile = await requireStoreOwner("/vendor")
 
   const data = await getVendorDashboard(profile.id)
 

@@ -16,4 +16,5 @@ node_modules
 .vercel
 .env*
 .env
+.data/
 tsconfig.tsbuildinfo

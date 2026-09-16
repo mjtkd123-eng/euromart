@@ -94,6 +94,11 @@ export default function LoginPage() {
           {t("signUpAction")}
         </Link>
       </p>
+      <p className="mt-3 text-center text-sm">
+        <Link href="/vendor/login" className="font-semibold text-primary underline-offset-4 hover:underline">
+          마트 업주 / 본부 관리자 로그인
+        </Link>
+      </p>
     </AuthShell>
   )
 }

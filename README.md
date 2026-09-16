@@ -55,6 +55,15 @@ The Help Center and storefront include a 1:1 CS chat that follows the mart × Bo
 
 Open `/help/contact` or the **상담하기** button on the shop.
 
+## Vendor (store owner) admin
+
+Store owners cannot self-sign-up. Super Admin reviews documents, then issues a store + owner account. Passwords are bcrypt hashes only.
+
+- Login: `/vendor/login` (demo HQ `admin@k-euromart.demo` / `EuroMart-Admin-2026!`)
+- First login must change password: `/auth/change-password`
+- Spec: `docs/vendor-tenant-auth.md`
+
+
 ## Hybrid CS, claims & insurance
 
 Claim routing (micro / medium / high, 2-hour merchant SLA, food-safety Tier 2, FDS, GDPR retention) is specified in `docs/prd-hybrid-cs-claims.md`.

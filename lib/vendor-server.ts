@@ -1,6 +1,8 @@
 import "server-only"
 import { createClient } from "@/lib/supabase/server"
 import type { Currency } from "@/lib/storesData"
+import { isSupabaseConfigured } from "@/lib/supabase/config"
+import { findStoreById, findUserById } from "@/lib/tenant-directory"
 
 /* ------------------------------ 타입 ------------------------------ */
 
@@ -106,6 +108,47 @@ export interface VendorDashboardData {
  * RLS 정책이 vendor_id 기준으로 접근을 제한하므로, 다른 매장 데이터는 보이지 않습니다.
  */
 export async function getVendorDashboard(vendorId: string): Promise<VendorDashboardData | null> {
+  if (!isSupabaseConfigured()) {
+    const user = await findUserById(vendorId)
+    if (!user?.storeId) return null
+    const storeRow = await findStoreById(user.storeId)
+    if (!storeRow) return null
+    const store: VendorStore = {
+      id: storeRow.id,
+      city: storeRow.citySlug,
+      country: "EU",
+      countryCode: "EU",
+      storeKo: storeRow.name,
+      storeEn: storeRow.name,
+      announcementKo: "",
+      announcementEn: "",
+      heroTitleKo: storeRow.name,
+      heroTitleEn: storeRow.name,
+      heroSubtitleKo: storeRow.legalName,
+      heroSubtitleEn: storeRow.legalName,
+      deliveryFee: 0,
+      freeDeliveryOver: 0,
+      active: storeRow.status === "active",
+      currency: { code: storeRow.currencyCode, locale: "de-DE", decimals: 2 },
+    }
+    return {
+      store,
+      listings: [],
+      catalog: [],
+      promotions: [],
+      orders: [],
+      stats: {
+        orderCount: 0,
+        revenue: 0,
+        lowStock: 0,
+        activeListings: 0,
+        todayOrderCount: 0,
+        todayRevenue: 0,
+        openOrderCount: 0,
+      },
+    }
+  }
+
   const supabase = await createClient()
 
   const { data: region } = await supabase

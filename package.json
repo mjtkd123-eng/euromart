@@ -7,13 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test:claims": "node --experimental-strip-types --test lib/claims-routing.test.ts"
+    "test:claims": "node --experimental-strip-types --test lib/claims-routing.test.ts lib/tenant-auth.test.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.112.2",
     "@vercel/analytics": "1.6.1",
+    "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.16.0",
@@ -27,6 +28,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.0",
+    "@types/bcryptjs": "^3.0.0",
     "@types/node": "^24",
     "@types/react": "^19",
     "@types/react-dom": "^19",

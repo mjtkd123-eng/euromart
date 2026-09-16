@@ -1,5 +1,6 @@
 import "server-only"
 import { createClient } from "@/lib/supabase/server"
+import { isSupabaseConfigured } from "@/lib/supabase/config"
 import type { ClaimView, OrderView, EvidenceView } from "./claims-types"
 
 /** 지역 id → 도시명 캐시(간단히 매 호출 조회) */
@@ -12,6 +13,7 @@ async function regionCityMap(supabase: Awaited<ReturnType<typeof createClient>>)
 
 /** 마감 지난 판매자 미응답 클레임을 자동 강제 환불 처리 (조회 전에 호출) */
 export async function sweepOverdueClaims() {
+  if (!isSupabaseConfigured()) return
   const supabase = await createClient()
   await supabase.rpc("auto_resolve_overdue_claims")
 }
@@ -207,6 +209,10 @@ export async function fetchVendorClaims(): Promise<{
   penaltyPoints: number
   suspended: boolean
 }> {
+  if (!isSupabaseConfigured()) {
+    return { claims: [], ledger: [], penaltyPoints: 0, suspended: false }
+  }
+
   const supabase = await createClient()
 
   const { data: claimRows } = await supabase

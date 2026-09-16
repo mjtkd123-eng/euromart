@@ -1,8 +1,8 @@
-import { redirect } from "next/navigation"
 import type { Metadata } from "next"
-import { getSessionProfile } from "@/lib/auth"
+import { requireSuperAdmin } from "@/lib/auth"
 import { getAdminDashboard } from "@/lib/admin-server"
 import { fetchAdminClaims, sweepOverdueClaims } from "@/lib/claims-server"
+import { isSupabaseConfigured } from "@/lib/supabase/config"
 import { DashboardShell, StatStrip } from "@/components/dashboard/dashboard-shell"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { RegionsManager } from "@/components/admin/regions-manager"
@@ -11,20 +11,39 @@ import { ProductsManager } from "@/components/admin/products-manager"
 import { FxManager } from "@/components/admin/fx-manager"
 import { AdminOrders } from "@/components/admin/admin-orders"
 import { AdminClaimsView } from "@/components/admin/admin-claims-view"
+import { StoreOnboardingPanel } from "@/components/admin/store-onboarding-panel"
 
 export const metadata: Metadata = {
   title: "관리자 대시보드 · K-EuroMart",
-  description: "지역과 판매자, 마스터 상품, 환율, 전체 주문, 환불·분쟁을 관리합니다.",
+  description: "입점 심사, 업주 계정 발급, 지역·상품·환율·분쟁을 관리합니다.",
 }
 
 export const dynamic = "force-dynamic"
 
 export default async function AdminPage() {
-  const profile = await getSessionProfile()
-  if (!profile) redirect("/auth/login?next=/admin")
-  if (profile.role !== "admin") redirect("/")
+  const profile = await requireSuperAdmin("/admin")
+  const live = isSupabaseConfigured()
 
-  // 기한이 지난 환불·분쟁 건을 먼저 정리한 뒤 목록을 불러옵니다.
+  if (!live) {
+    return (
+      <DashboardShell
+        eyebrow="최고 관리자"
+        title="K-EuroMart 본부"
+        subtitle="입점 서류를 검토한 뒤 마트 업주 계정을 수동 발급합니다. 비밀번호는 bcrypt 해시만 저장됩니다."
+        email={profile.email}
+      >
+        <Tabs defaultValue="onboarding" className="mt-5">
+          <TabsList>
+            <TabsTrigger value="onboarding">입점 심사 · 계정 발급</TabsTrigger>
+          </TabsList>
+          <TabsContent value="onboarding" className="pt-4">
+            <StoreOnboardingPanel />
+          </TabsContent>
+        </Tabs>
+      </DashboardShell>
+    )
+  }
+
   await sweepOverdueClaims()
   const [{ regions, users, products, categories, fxRates, orders, stats }, claims] = await Promise.all([
     getAdminDashboard(),
@@ -35,9 +54,9 @@ export default async function AdminPage() {
 
   return (
     <DashboardShell
-      eyebrow="관리자"
+      eyebrow="최고 관리자"
       title="K-EuroMart 본부"
-      subtitle="유럽 전 지역의 매장과 판매자, 공통 상품 카탈로그, 환율, 주문, 환불·분쟁을 한곳에서 관리합니다."
+      subtitle="유럽 전 지역의 매장과 판매자, 입점 심사, 공통 상품 카탈로그, 환율, 주문, 환불·분쟁을 한곳에서 관리합니다."
       email={profile.email}
     >
       <StatStrip
@@ -62,8 +81,9 @@ export default async function AdminPage() {
         ]}
       />
 
-      <Tabs defaultValue="regions" className="mt-5">
-        <TabsList>
+      <Tabs defaultValue="onboarding" className="mt-5">
+        <TabsList className="flex flex-wrap">
+          <TabsTrigger value="onboarding">입점 심사 · 계정 발급</TabsTrigger>
           <TabsTrigger value="regions">지역 · 매장</TabsTrigger>
           <TabsTrigger value="users">사용자</TabsTrigger>
           <TabsTrigger value="products">마스터 상품</TabsTrigger>
@@ -72,6 +92,9 @@ export default async function AdminPage() {
           <TabsTrigger value="claims">환불 · 분쟁</TabsTrigger>
         </TabsList>
 
+        <TabsContent value="onboarding" className="pt-4">
+          <StoreOnboardingPanel />
+        </TabsContent>
         <TabsContent value="regions" className="pt-4">
           <RegionsManager regions={regions} users={users} />
         </TabsContent>
