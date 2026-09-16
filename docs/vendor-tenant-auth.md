@@ -40,7 +40,7 @@ Temporary passwords are 16-character unambiguous alphanumerics (no `+`, `O`, `0`
 
 `lib/tenant-guard.ts` → `assertStoreAccess(actor, targetStoreId)`.
 
-`middleware.ts` forces `/auth/change-password` while `mustChangePassword` is true.
+`middleware.ts` forces `/auth/change-password` while `mustChangePassword` is true. On that first login the current (temporary) password is **not** re-checked — the session already proved possession. Later password changes still require the current password.
 
 ## UI
 

@@ -104,9 +104,6 @@ export async function changeOwnPassword(
   if (!isStrongPassword(nextPassword)) {
     return { ok: false, error: "비밀번호는 10자 이상, 영문 대·소문자와 숫자를 포함해야 합니다." }
   }
-  if (currentPassword === nextPassword) {
-    return { ok: false, error: "이전과 다른 비밀번호를 사용하세요." }
-  }
 
   if (isSupabaseConfigured()) {
     const { createClient } = await import("@/lib/supabase/server")
@@ -115,22 +112,44 @@ export async function changeOwnPassword(
     if (!userData.user || userData.user.id !== userId) {
       return { ok: false, error: "세션이 만료되었습니다. 다시 로그인해 주세요." }
     }
+    const sess = await readTenantSession()
+    const firstLogin = Boolean(sess?.mustChangePassword)
+    if (!firstLogin) {
+      if (!currentPassword) return { ok: false, error: "현재 비밀번호가 올바르지 않습니다." }
+      const { error: reauth } = await supabase.auth.signInWithPassword({
+        email: userData.user.email ?? "",
+        password: currentPassword,
+      })
+      if (reauth) return { ok: false, error: "현재 비밀번호가 올바르지 않습니다." }
+    }
+    if (currentPassword && currentPassword === nextPassword) {
+      return { ok: false, error: "이전과 다른 비밀번호를 사용하세요." }
+    }
     const { error } = await supabase.auth.updateUser({ password: nextPassword })
     if (error) return { ok: false, error: error.message }
     await supabase.from("profiles").update({
       must_change_password: false,
       password_changed_at: new Date().toISOString(),
     }).eq("id", userId)
-    const sess = await readTenantSession()
     if (sess) await writeTenantSession({ ...sess, mustChangePassword: false })
     return { ok: true }
   }
 
   const user = await findUserById(userId)
   if (!user) return { ok: false, error: "계정을 찾을 수 없습니다." }
-  const { authenticateDirectory } = await import("@/lib/tenant-directory")
-  const ok = await authenticateDirectory(user.email, currentPassword)
-  if (!ok) return { ok: false, error: "현재 비밀번호가 올바르지 않습니다." }
+
+  if (user.mustChangePassword) {
+    if (currentPassword && currentPassword === nextPassword) {
+      return { ok: false, error: "이전과 다른 비밀번호를 사용하세요." }
+    }
+  } else {
+    if (currentPassword === nextPassword) {
+      return { ok: false, error: "이전과 다른 비밀번호를 사용하세요." }
+    }
+    const ok = await authenticateDirectory(user.email, currentPassword)
+    if (!ok) return { ok: false, error: "현재 비밀번호가 올바르지 않습니다." }
+  }
+
   await updateDirectoryPassword(userId, nextPassword)
   const sess = await readTenantSession()
   if (sess) await writeTenantSession({ ...sess, mustChangePassword: false })
