@@ -1,4 +1,5 @@
 import "server-only"
+import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { isSupabaseConfigured } from "@/lib/supabase/config"
 
@@ -39,4 +40,30 @@ export function homePathForRole(role: Role): string {
   if (role === "admin") return "/admin"
   if (role === "vendor") return "/vendor"
   return "/"
+}
+
+export function isStaffRole(role: Role | null | undefined): boolean {
+  return role === "vendor" || role === "admin"
+}
+
+/**
+ * Vendor (마트 업주) or platform admin only.
+ * When Supabase is not configured, returns a demo staff profile so ops screens
+ * remain previewable without login.
+ */
+export async function requireStaff(nextPath: string): Promise<SessionProfile & { demo: boolean }> {
+  if (!isSupabaseConfigured()) {
+    return {
+      id: "demo-staff",
+      email: "ops@k-euromart.demo",
+      fullName: "Demo operator",
+      role: "admin",
+      demo: true,
+    }
+  }
+
+  const profile = await getSessionProfile()
+  if (!profile) redirect(`/auth/login?next=${encodeURIComponent(nextPath)}`)
+  if (!isStaffRole(profile.role)) redirect("/")
+  return { ...profile, demo: false }
 }

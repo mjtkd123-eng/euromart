@@ -107,7 +107,7 @@ function fieldClass() {
   return "h-9 w-full rounded-lg border border-input bg-background px-2.5 text-sm"
 }
 
-export function ClaimsPolicyView() {
+export function ClaimsPolicyView({ audience = "staff" }: { audience?: "staff" | "customer" }) {
   const { lang, t } = useEuromart()
   const [market, setMarket] = useState<ClaimMarket>("EU")
   const [amount, setAmount] = useState("18")
@@ -147,8 +147,8 @@ export function ClaimsPolicyView() {
         <ShieldCheck className="size-5 shrink-0 text-primary" aria-hidden="true" />
         <p className="text-sm leading-relaxed text-muted-foreground">
           {lang === "ko"
-            ? "클레임은 금액·사유·위험도에 따라 매장(2시간) 또는 플랫폼 법무로 나뉩니다. 플랫폼이 고객에게 먼저 지급하고, 매장 PL 보험으로 구상합니다."
-            : "Claims route by amount, issue, and risk — store (2-hour SLA) or platform Legal. The platform pays you first, then recovers from the merchant’s product-liability insurance."}
+            ? "내부 라우팅 기준입니다. 고객 고객센터에는 공개하지 않습니다. 플랫폼이 고객에게 먼저 지급한 뒤 매장 PL 보험으로 구상합니다."
+            : "Internal routing rules — not shown in the customer Help Center. The platform pays the customer first, then recovers from merchant PL insurance."}
         </p>
       </div>
 
@@ -371,22 +371,51 @@ export function ClaimsPolicyView() {
         </ul>
       </section>
 
-      <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-6 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-base font-bold">{t("returnsCtaTitle")}</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{t("returnsCtaDesc")}</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {t("customerCenter")} {CONTACT.email} · {helpText(CONTACT.hours, lang)}
-          </p>
+      {audience === "staff" ? (
+        <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-base font-bold">
+              {lang === "ko" ? "큐에서 클레임 처리" : "Work claims in the queue"}
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {lang === "ko"
+                ? "업주는 2시간 SLA 큐, 관리자는 고위험·FDS·중재 콘솔에서 처리합니다."
+                : "Stores work the 2-hour SLA queue. Admins handle high-risk, FDS, and mediation."}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/vendor/claims"
+              className="inline-flex h-11 items-center justify-center rounded-xl border border-border px-4 text-sm font-semibold transition-colors hover:bg-muted"
+            >
+              {lang === "ko" ? "업주 큐" : "Store queue"}
+            </Link>
+            <Link
+              href="/admin"
+              className="inline-flex h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              {lang === "ko" ? "관리자 콘솔" : "Admin console"}
+            </Link>
+          </div>
         </div>
-        <Link
-          href="/help/contact"
-          className="inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-        >
-          <MessageCircle className="size-4" aria-hidden="true" />
-          {t("returnsCtaButton")}
-        </Link>
-      </div>
+      ) : (
+        <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-base font-bold">{t("returnsCtaTitle")}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{t("returnsCtaDesc")}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t("customerCenter")} {CONTACT.email} · {helpText(CONTACT.hours, lang)}
+            </p>
+          </div>
+          <Link
+            href="/help/contact"
+            className="inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            <MessageCircle className="size-4" aria-hidden="true" />
+            {t("returnsCtaButton")}
+          </Link>
+        </div>
+      )}
     </div>
   )
 }

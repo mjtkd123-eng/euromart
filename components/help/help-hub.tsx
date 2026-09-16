@@ -12,7 +12,6 @@ import {
   Megaphone,
   Scale,
   MessageCircle,
-  ShieldAlert,
   ChevronRight,
   Mail,
   Clock,
@@ -30,7 +29,6 @@ const ICONS: Record<string, LucideIcon> = {
   megaphone: Megaphone,
   scale: Scale,
   "message-circle": MessageCircle,
-  "shield-alert": ShieldAlert,
 }
 
 export function HelpHub() {

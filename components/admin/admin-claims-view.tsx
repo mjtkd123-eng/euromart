@@ -233,6 +233,12 @@ export function AdminClaimsView({ claims }: { claims: ClaimView[] }) {
               <p className="text-xs text-muted-foreground">분쟁 중재 및 판매자 페널티 관리</p>
             </div>
           </div>
+          <Link
+            href="/ops/claims"
+            className="ml-auto rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted"
+          >
+            처리 기준
+          </Link>
         </div>
       </header>
 

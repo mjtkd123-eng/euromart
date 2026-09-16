@@ -255,6 +255,12 @@ export function VendorClaimsView({
               <p className="text-xs text-muted-foreground">고객 환불 신고 확인 및 정산 현황</p>
             </div>
           </div>
+          <Link
+            href="/ops/claims"
+            className="ml-auto rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted"
+          >
+            처리 기준
+          </Link>
         </div>
       </header>
 

@@ -19,7 +19,6 @@ export type HelpSectionId =
   | "shipping"
   | "payment"
   | "returns"
-  | "claims"
   | "legal"
   | "notice"
   | "contact"
@@ -35,7 +34,6 @@ export interface HelpSection {
     | "shippingPageDesc"
     | "paymentPageDesc"
     | "returnsPageDesc"
-    | "claimsPageDesc"
     | "legalPageDesc"
     | "noticePageDesc"
     | "contactPageDesc"
@@ -83,16 +81,6 @@ export const HELP_SECTIONS: HelpSection[] = [
     pageDescKey: "returnsPageDesc",
     icon: "rotate-ccw",
     href: "/help/returns",
-  },
-  {
-    id: "claims",
-    label: "클레임 처리 기준",
-    labelEn: "Claims",
-    description: "금액대별 즉시 환불, 매장 2시간 SLA, 식중독·알레르기 등 고위험 이관 기준.",
-    descriptionEn: "Instant micro refunds, the 2-hour store SLA, and high-risk food-safety escalation.",
-    pageDescKey: "claimsPageDesc",
-    icon: "shield-alert",
-    href: "/help/claims",
   },
   {
     id: "notice",

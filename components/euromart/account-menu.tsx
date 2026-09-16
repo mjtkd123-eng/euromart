@@ -110,18 +110,38 @@ export function AccountMenu() {
                 <MessageSquareWarning className="size-4 text-primary" aria-hidden="true" />
                 {t("manageClaims")}
               </Link>
+              <Link
+                href="/ops/claims"
+                role="menuitem"
+                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                onClick={() => setOpen(false)}
+              >
+                <ShieldCheck className="size-4 text-primary" aria-hidden="true" />
+                클레임 처리 기준
+              </Link>
             </>
           )}
           {user.role === "admin" && (
-            <Link
-              href="/admin"
-              role="menuitem"
-              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-              onClick={() => setOpen(false)}
-            >
-              <ShieldCheck className="size-4 text-primary" aria-hidden="true" />
-              {t("adminConsole")}
-            </Link>
+            <>
+              <Link
+                href="/admin"
+                role="menuitem"
+                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                onClick={() => setOpen(false)}
+              >
+                <ShieldCheck className="size-4 text-primary" aria-hidden="true" />
+                {t("adminConsole")}
+              </Link>
+              <Link
+                href="/ops/claims"
+                role="menuitem"
+                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                onClick={() => setOpen(false)}
+              >
+                <MessageSquareWarning className="size-4 text-primary" aria-hidden="true" />
+                클레임 처리 기준
+              </Link>
+            </>
           )}
 
           <form action={signOut}>

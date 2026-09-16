@@ -8,7 +8,7 @@ This document is the source of truth for claim routing, thresholds, legal SOP, i
 
 - Schema: `supabase/migrations/20260916_hybrid_cs_claims.sql`
 - Routing: `lib/claims-routing.ts`
-- Simulator: `/help/claims` (same engine, no ticket created)
+- Simulator (staff only): `/ops/claims` — vendor and admin. Not in the customer Help Center.
 - Crons: `/api/cron/sweep-claim-sla` (every 5 min), `/api/cron/gdpr-retention` (daily 05:00 UTC)
 
 ---
@@ -155,6 +155,7 @@ Settlement states: `draft → invoiced → recovered → written_off`.
 - Micro already paid: banner “고객 환불 완료 — 이의를 남기면 정산에 반영됩니다.”
 - Actions: Approve (ack), Dispute (note, not blocking if already paid), Upload counter-evidence.
 - Cannot see medical certificates (Tier 2 only).
+- Full routing playbook (bands, FDS, SOP): **`/ops/claims`** — vendor and admin only, not in customer Help Center.
 
 ### 8.3 Platform Tier 2 (`/admin` → Claims / Legal)
 

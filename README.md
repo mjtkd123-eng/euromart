@@ -61,7 +61,7 @@ Claim routing (micro / medium / high, 2-hour merchant SLA, food-safety Tier 2, F
 
 - Schema: `supabase/migrations/20260916_hybrid_cs_claims.sql` (`claims`, `escalations`, `settlements`, `fds_logs`)
 - Engine: `lib/claims-routing.ts`
-- Preview the same rules in the Help Center: `/help/claims`
+- Preview (staff only): `/ops/claims` — vendor and admin. Hidden from the customer Help Center. In this demo (no login) the page still opens so you can preview; with Supabase auth, customers are redirected home.
 - Crons (Bearer `CRON_SECRET`): `/api/cron/sweep-claim-sla` every 5 minutes, `/api/cron/gdpr-retention` daily 05:00 UTC
 
 ```bash
