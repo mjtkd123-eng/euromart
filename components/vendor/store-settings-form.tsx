@@ -77,8 +77,10 @@ export function StoreSettingsForm({ store }: { store: VendorStore }) {
       </section>
 
       <section className="rounded-xl border border-border bg-card p-4">
-        <h2 className="text-sm font-black text-foreground">스토어 표시 문구</h2>
-        <p className="mt-0.5 text-xs text-muted-foreground">고객 스토어의 공지 배너와 히어로 영역에 표시됩니다.</p>
+        <h2 className="text-sm font-black text-foreground">이벤트 · 공지 배너</h2>
+        <p className="mt-0.5 text-xs text-muted-foreground">
+          세일 기간, 무료배송 기준 같은 매장 이벤트를 고객 스토어 상단에 보여 줍니다.
+        </p>
         <div className="mt-4 flex flex-col gap-3">
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="공지 (한글)" htmlFor="announcementKo">

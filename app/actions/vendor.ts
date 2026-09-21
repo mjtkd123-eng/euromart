@@ -3,18 +3,33 @@
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import { getSessionProfile } from "@/lib/auth"
+import { isSupabaseConfigured } from "@/lib/supabase/config"
+import { assertStoreAccess, StoreScopeError } from "@/lib/tenant-guard"
+import {
+  deleteDirectoryPromotion,
+  updateDirectoryStore,
+  upsertDirectoryPromotion,
+  upsertListingOverride,
+} from "@/lib/tenant-directory"
 
 type Result = { ok: boolean; error?: string }
 
-/**
- * 로그인 사용자가 판매자이며, 대상 지역이 본인에게 배정된 매장인지 확인합니다.
- * RLS가 이미 서버측에서 차단하지만, 명확한 오류 메시지를 위해 먼저 검사합니다.
- */
 async function requireVendorRegion(regionId: string) {
   const profile = await getSessionProfile()
   if (!profile) return { error: "로그인이 필요합니다." as const }
   if (profile.role !== "vendor" && profile.role !== "admin") {
     return { error: "판매자 권한이 필요합니다." as const }
+  }
+
+  try {
+    assertStoreAccess({ role: profile.role, storeId: profile.storeId }, regionId)
+  } catch (err) {
+    const scope = err as StoreScopeError
+    return { error: (scope.message || "이 매장에 대한 권한이 없습니다.") as const }
+  }
+
+  if (!isSupabaseConfigured()) {
+    return { demo: true as const, profile }
   }
 
   const supabase = await createClient()
@@ -24,7 +39,12 @@ async function requireVendorRegion(regionId: string) {
   if (profile.role === "vendor" && data.vendor_id !== profile.id) {
     return { error: "이 매장에 대한 권한이 없습니다." as const }
   }
-  return { supabase, profile }
+  return { demo: false as const, supabase, profile }
+}
+
+function listingProductId(storeId: string, listingId: string): string {
+  const prefix = `${storeId}:`
+  return listingId.startsWith(prefix) ? listingId.slice(prefix.length) : listingId
 }
 
 /* --------------------------- 매장 정보 수정 --------------------------- */
@@ -51,6 +71,21 @@ export async function updateStore(input: {
   }
   if (!Number.isFinite(input.freeDeliveryOver) || input.freeDeliveryOver < 0) {
     return { ok: false, error: "무료배송 기준 금액은 0 이상이어야 합니다." }
+  }
+
+  if (guard.demo) {
+    const ok = await updateDirectoryStore(input.regionId, {
+      name: input.storeKo.trim(),
+      storeEn: input.storeEn.trim(),
+      announcementKo: input.announcementKo.trim(),
+      announcementEn: input.announcementEn.trim(),
+      deliveryFee: input.deliveryFee,
+      freeDeliveryOver: input.freeDeliveryOver,
+    })
+    if (!ok) return { ok: false, error: "매장을 찾을 수 없습니다." }
+    revalidatePath("/vendor")
+    revalidatePath("/")
+    return { ok: true }
   }
 
   const { error } = await guard.supabase
@@ -95,6 +130,18 @@ export async function upsertListing(input: {
     return { ok: false, error: "재고는 0 이상의 정수여야 합니다." }
   }
 
+  if (guard.demo) {
+    await upsertListingOverride(input.regionId, input.productId, {
+      price: input.price,
+      stock: input.stock,
+      featured: input.featured,
+      active: input.active,
+    })
+    revalidatePath("/vendor")
+    revalidatePath("/")
+    return { ok: true }
+  }
+
   const { error } = await guard.supabase.from("region_products").upsert(
     {
       region_id: input.regionId,
@@ -116,6 +163,13 @@ export async function upsertListing(input: {
 export async function deleteListing(regionId: string, listingId: string): Promise<Result> {
   const guard = await requireVendorRegion(regionId)
   if ("error" in guard) return { ok: false, error: guard.error }
+
+  if (guard.demo) {
+    await upsertListingOverride(regionId, listingProductId(regionId, listingId), { active: false })
+    revalidatePath("/vendor")
+    revalidatePath("/")
+    return { ok: true }
+  }
 
   const { error } = await guard.supabase
     .from("region_products")
@@ -157,6 +211,23 @@ export async function upsertPromotion(input: {
     return { ok: false, error: "최소 주문금액은 0 이상이어야 합니다." }
   }
 
+  if (guard.demo) {
+    const saved = await upsertDirectoryPromotion(input.regionId, {
+      id: input.id,
+      code,
+      descriptionKo: input.descriptionKo.trim(),
+      descriptionEn: input.descriptionEn.trim(),
+      discountType: input.discountType,
+      discountValue: input.discountValue,
+      minOrder: input.minOrder,
+      active: input.active,
+    })
+    if (!saved.ok) return { ok: false, error: saved.error }
+    revalidatePath("/vendor")
+    revalidatePath("/")
+    return { ok: true }
+  }
+
   const payload = {
     region_id: input.regionId,
     code,
@@ -185,6 +256,13 @@ export async function upsertPromotion(input: {
 export async function deletePromotion(regionId: string, promotionId: string): Promise<Result> {
   const guard = await requireVendorRegion(regionId)
   if ("error" in guard) return { ok: false, error: guard.error }
+
+  if (guard.demo) {
+    const ok = await deleteDirectoryPromotion(regionId, promotionId)
+    if (!ok) return { ok: false, error: "프로모션을 찾을 수 없습니다." }
+    revalidatePath("/vendor")
+    return { ok: true }
+  }
 
   const { error } = await guard.supabase
     .from("promotions")
@@ -222,6 +300,10 @@ export async function updateOrderStatus(
     return { ok: false, error: "올바르지 않은 주문 상태입니다." }
   }
 
+  if (guard.demo) {
+    return { ok: false, error: "데모에서는 주문 상태 변경이 주문 원장에 연결되지 않습니다." }
+  }
+
   const { error } = await guard.supabase
     .from("orders")
     .update({ status })
@@ -252,6 +334,13 @@ export async function quickUpdateStock(
   }
   if (stock > 100000) {
     return { ok: false, error: "재고 수량이 너무 큽니다." }
+  }
+
+  if (guard.demo) {
+    await upsertListingOverride(regionId, listingProductId(regionId, listingId), { stock })
+    revalidatePath("/vendor")
+    revalidatePath("/")
+    return { ok: true }
   }
 
   const { error } = await guard.supabase

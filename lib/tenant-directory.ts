@@ -32,6 +32,32 @@ export interface DirectoryStore {
   status: StoreStatus
   ownerUserId: string
   createdAt: string
+  storeEn?: string
+  announcementKo?: string
+  announcementEn?: string
+  deliveryFee?: number
+  freeDeliveryOver?: number
+}
+
+export interface DirectoryPromotion {
+  id: string
+  storeId: string
+  code: string
+  descriptionKo: string
+  descriptionEn: string
+  discountType: "percent" | "fixed"
+  discountValue: number
+  minOrder: number
+  active: boolean
+}
+
+export interface DirectoryListingOverride {
+  storeId: string
+  productId: string
+  price?: number
+  stock?: number
+  featured?: boolean
+  active?: boolean
 }
 
 export interface DirectoryApplication {
@@ -73,6 +99,8 @@ interface DirectoryFile {
   applications: DirectoryApplication[]
   tokens: DirectoryToken[]
   mail: MailOutboxRow[]
+  promotions: DirectoryPromotion[]
+  listingOverrides: DirectoryListingOverride[]
 }
 
 const FILE = path.join(process.cwd(), ".data", "tenant-auth.json")
@@ -140,15 +168,51 @@ async function empty(): Promise<DirectoryFile> {
     ],
     tokens: [],
     mail: [],
+    promotions: [
+      {
+        id: `${storeId}:promo-welcome`,
+        storeId,
+        code: "KIMCHI10",
+        descriptionKo: "김치·반찬 10% 할인",
+        descriptionEn: "10% off kimchi & banchan",
+        discountType: "percent",
+        discountValue: 10,
+        minOrder: 20,
+        active: true,
+      },
+    ],
+    listingOverrides: [],
   }
 }
 
 let writeQueue: Promise<void> = Promise.resolve()
 
+function normalize(data: DirectoryFile): DirectoryFile {
+  if (!Array.isArray(data.promotions)) {
+    data.promotions = []
+    const vienna = data.stores.find((s) => s.citySlug === "vienna")
+    if (vienna) {
+      data.promotions.push({
+        id: `${vienna.id}:promo-welcome`,
+        storeId: vienna.id,
+        code: "KIMCHI10",
+        descriptionKo: "김치·반찬 10% 할인",
+        descriptionEn: "10% off kimchi & banchan",
+        discountType: "percent",
+        discountValue: 10,
+        minOrder: 20,
+        active: true,
+      })
+    }
+  }
+  if (!Array.isArray(data.listingOverrides)) data.listingOverrides = []
+  return data
+}
+
 async function loadUnlocked(): Promise<DirectoryFile> {
   try {
     const raw = await readFile(FILE, "utf8")
-    return JSON.parse(raw) as DirectoryFile
+    return normalize(JSON.parse(raw) as DirectoryFile)
   } catch {
     const seeded = await empty()
     await persist(seeded)
@@ -399,5 +463,105 @@ export async function recordMail(to: string, subject: string, body: string): Pro
       createdAt: new Date().toISOString(),
     })
     data.mail = data.mail.slice(0, 50)
+  })
+}
+
+export async function listDirectoryPromotions(storeId: string): Promise<DirectoryPromotion[]> {
+  return read((data) => data.promotions.filter((p) => p.storeId === storeId))
+}
+
+export async function upsertDirectoryPromotion(
+  storeId: string,
+  input: Omit<DirectoryPromotion, "id" | "storeId"> & { id?: string },
+): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
+  return mutate((data) => {
+    const code = input.code.trim().toUpperCase()
+    const dup = data.promotions.find(
+      (p) => p.storeId === storeId && p.code === code && p.id !== input.id,
+    )
+    if (dup) return { ok: false as const, error: "이미 존재하는 프로모션 코드입니다." }
+
+    if (input.id) {
+      const row = data.promotions.find((p) => p.id === input.id && p.storeId === storeId)
+      if (!row) return { ok: false as const, error: "프로모션을 찾을 수 없습니다." }
+      Object.assign(row, {
+        code,
+        descriptionKo: input.descriptionKo,
+        descriptionEn: input.descriptionEn,
+        discountType: input.discountType,
+        discountValue: input.discountValue,
+        minOrder: input.minOrder,
+        active: input.active,
+      })
+      return { ok: true as const, id: row.id }
+    }
+
+    const row: DirectoryPromotion = {
+      id: crypto.randomUUID(),
+      storeId,
+      code,
+      descriptionKo: input.descriptionKo,
+      descriptionEn: input.descriptionEn,
+      discountType: input.discountType,
+      discountValue: input.discountValue,
+      minOrder: input.minOrder,
+      active: input.active,
+    }
+    data.promotions.push(row)
+    return { ok: true as const, id: row.id }
+  })
+}
+
+export async function deleteDirectoryPromotion(storeId: string, promotionId: string): Promise<boolean> {
+  return mutate((data) => {
+    const before = data.promotions.length
+    data.promotions = data.promotions.filter((p) => !(p.id === promotionId && p.storeId === storeId))
+    return data.promotions.length < before
+  })
+}
+
+export async function listListingOverrides(storeId: string): Promise<DirectoryListingOverride[]> {
+  return read((data) => data.listingOverrides.filter((r) => r.storeId === storeId))
+}
+
+export async function upsertListingOverride(
+  storeId: string,
+  productId: string,
+  patch: Omit<DirectoryListingOverride, "storeId" | "productId">,
+): Promise<void> {
+  await mutate((data) => {
+    const row = data.listingOverrides.find((r) => r.storeId === storeId && r.productId === productId)
+    if (row) Object.assign(row, patch)
+    else data.listingOverrides.push({ storeId, productId, ...patch })
+  })
+}
+
+export async function removeListingOverride(storeId: string, productId: string): Promise<void> {
+  await mutate((data) => {
+    data.listingOverrides = data.listingOverrides.filter(
+      (r) => !(r.storeId === storeId && r.productId === productId),
+    )
+  })
+}
+
+export async function updateDirectoryStore(
+  storeId: string,
+  patch: Partial<
+    Pick<
+      DirectoryStore,
+      | "name"
+      | "storeEn"
+      | "announcementKo"
+      | "announcementEn"
+      | "deliveryFee"
+      | "freeDeliveryOver"
+    >
+  >,
+): Promise<boolean> {
+  return mutate((data) => {
+    const store = data.stores.find((s) => s.id === storeId)
+    if (!store) return false
+    Object.assign(store, patch)
+    return true
   })
 }

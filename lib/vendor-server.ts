@@ -2,7 +2,7 @@ import "server-only"
 import { createClient } from "@/lib/supabase/server"
 import type { Currency } from "@/lib/storesData"
 import { isSupabaseConfigured } from "@/lib/supabase/config"
-import { findStoreById, findUserById, type DirectoryStore } from "@/lib/tenant-directory"
+import { findStoreById, findUserById, listDirectoryPromotions, listListingOverrides, type DirectoryStore } from "@/lib/tenant-directory"
 import { DEMO_REGIONS } from "@/lib/demo-regions"
 import { assertStoreAccess } from "@/lib/tenant-guard"
 
@@ -117,7 +117,7 @@ export async function getVendorDashboard(vendorId: string): Promise<VendorDashbo
       const storeRow = await findStoreById(user.storeId)
       if (!storeRow) return null
       assertStoreAccess({ role: "vendor", storeId: user.storeId }, storeRow.id)
-      return dashboardFromDirectoryStore(storeRow)
+      return await dashboardFromDirectoryStore(storeRow)
     }
     return null
   }
@@ -246,7 +246,7 @@ export async function getVendorDashboard(vendorId: string): Promise<VendorDashbo
 /** 처리 대기로 간주하는 주문 상태 (판매자 액션이 필요한 상태) */
 const OPEN_ORDER_STATUSES = new Set(["pending", "packed", "awaiting_courier", "confirmed"])
 
-function dashboardFromDirectoryStore(storeRow: DirectoryStore): VendorDashboardData {
+async function dashboardFromDirectoryStore(storeRow: DirectoryStore): Promise<VendorDashboardData> {
   const region = DEMO_REGIONS.find((r) => r.id === storeRow.citySlug) ?? null
   const currency: Currency = region?.currency ?? {
     code: storeRow.currencyCode || "EUR",
@@ -259,54 +259,58 @@ function dashboardFromDirectoryStore(storeRow: DirectoryStore): VendorDashboardD
     country: region?.country ?? "EU",
     countryCode: region?.countryCode ?? "EU",
     storeKo: storeRow.name,
-    storeEn: region?.store.en ?? storeRow.name,
-    announcementKo: region?.announcement.ko ?? "",
-    announcementEn: region?.announcement.en ?? "",
+    storeEn: storeRow.storeEn ?? region?.store.en ?? storeRow.name,
+    announcementKo: storeRow.announcementKo ?? region?.announcement.ko ?? "",
+    announcementEn: storeRow.announcementEn ?? region?.announcement.en ?? "",
     heroTitleKo: region?.hero.title.ko ?? storeRow.name,
     heroTitleEn: region?.hero.title.en ?? storeRow.name,
     heroSubtitleKo: region?.hero.subtitle.ko ?? storeRow.legalName,
     heroSubtitleEn: region?.hero.subtitle.en ?? storeRow.legalName,
-    deliveryFee: region?.deliveryFee ?? 0,
-    freeDeliveryOver: region?.freeDeliveryOver ?? 0,
+    deliveryFee: storeRow.deliveryFee ?? region?.deliveryFee ?? 0,
+    freeDeliveryOver: storeRow.freeDeliveryOver ?? region?.freeDeliveryOver ?? 0,
     active: storeRow.status === "active",
     currency,
   }
 
+  const overrides = await listListingOverrides(storeRow.id)
+  const overrideMap = new Map(overrides.map((o) => [o.productId, o]))
   const stocks = [4, 9, 22, 41, 7, 16, 3, 28]
-  const listings: VendorListing[] = (region?.products ?? []).map((p, i) => ({
-    id: `${storeRow.id}:${p.id}`,
-    productId: p.id,
-    nameKo: p.nameKo,
-    nameEn: p.nameEn,
-    category: p.category,
-    image: p.image,
-    unit: p.unit,
-    brand: p.brand,
-    price: p.price,
-    stock: p.outOfStock ? 0 : stocks[i % stocks.length],
-    featured: p.featured,
-    active: true,
-  }))
+  const listings: VendorListing[] = (region?.products ?? [])
+    .map((p, i) => {
+      const over = overrideMap.get(p.id)
+      if (over?.active === false) return null
+      return {
+        id: `${storeRow.id}:${p.id}`,
+        productId: p.id,
+        nameKo: p.nameKo,
+        nameEn: p.nameEn,
+        category: p.category,
+        image: p.image,
+        unit: p.unit,
+        brand: p.brand,
+        price: over?.price ?? p.price,
+        stock: over?.stock ?? (p.outOfStock ? 0 : stocks[i % stocks.length]),
+        featured: over?.featured ?? p.featured,
+        active: over?.active ?? true,
+      }
+    })
+    .filter((row): row is VendorListing => row !== null)
 
   const listedIds = new Set(listings.map((l) => l.productId))
   const catalog: CatalogOption[] = DEMO_REGIONS.flatMap((r) => r.products)
     .filter((p, idx, all) => all.findIndex((x) => x.id === p.id) === idx && !listedIds.has(p.id))
     .map((p) => ({ id: p.id, nameKo: p.nameKo, nameEn: p.nameEn, category: p.category }))
 
-  const promotions: VendorPromotion[] = region
-    ? [
-        {
-          id: `${storeRow.id}:promo-welcome`,
-          code: "KIMCHI10",
-          descriptionKo: "김치·반찬 10% 할인",
-          descriptionEn: "10% off kimchi & banchan",
-          discountType: "percent",
-          discountValue: 10,
-          minOrder: region.freeDeliveryOver / 2,
-          active: true,
-        },
-      ]
-    : []
+  const promotions: VendorPromotion[] = (await listDirectoryPromotions(storeRow.id)).map((p) => ({
+    id: p.id,
+    code: p.code,
+    descriptionKo: p.descriptionKo,
+    descriptionEn: p.descriptionEn,
+    discountType: p.discountType,
+    discountValue: p.discountValue,
+    minOrder: p.minOrder,
+    active: p.active,
+  }))
 
   const orders = demoOrdersForStore(storeRow, listings, store)
   return {

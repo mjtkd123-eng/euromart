@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Loader2, Plus, Trash2, X } from "lucide-react"
 import { deletePromotion, upsertPromotion } from "@/app/actions/vendor"
 import type { VendorPromotion, VendorStore } from "@/lib/vendor-server"
@@ -18,27 +19,33 @@ interface Props {
 }
 
 export function PromotionsManager({ store, promotions }: Props) {
+  const router = useRouter()
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  function done() {
+    setCreating(false)
+    router.refresh()
+  }
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 className="text-sm font-black text-foreground">프로모션 코드 {promotions.length}개</h2>
+          <h2 className="text-sm font-black text-foreground">세일 · 프로모션 {promotions.length}개</h2>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            결제 시 고객이 입력하는 코드입니다. 할인은 서버에서 다시 계산되어 적용됩니다.
+            이 매장에서만 쓰는 할인 코드입니다. 켜고 끄거나 새로 만들 수 있고, 다른 매장에는 적용되지 않습니다.
           </p>
         </div>
         <Button size="sm" className="rounded-full" onClick={() => setCreating((v) => !v)}>
           {creating ? <X className="size-4" aria-hidden="true" /> : <Plus className="size-4" aria-hidden="true" />}
-          {creating ? "닫기" : "코드 만들기"}
+          {creating ? "닫기" : "세일 코드 만들기"}
         </Button>
       </div>
 
       {error && <FormNotice>{error}</FormNotice>}
 
-      {creating && <PromotionForm store={store} onDone={() => setCreating(false)} onError={setError} />}
+      {creating && <PromotionForm store={store} onDone={done} onError={setError} />}
 
       {promotions.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border bg-card px-4 py-10 text-center text-sm text-muted-foreground">
@@ -47,7 +54,13 @@ export function PromotionsManager({ store, promotions }: Props) {
       ) : (
         <ul className="flex flex-col gap-2">
           {promotions.map((promo) => (
-            <PromotionRow key={promo.id} store={store} promo={promo} onError={setError} />
+            <PromotionRow
+              key={promo.id}
+              store={store}
+              promo={promo}
+              onError={setError}
+              onChanged={() => router.refresh()}
+            />
           ))}
         </ul>
       )}
@@ -59,10 +72,12 @@ function PromotionRow({
   store,
   promo,
   onError,
+  onChanged,
 }: {
   store: VendorStore
   promo: VendorPromotion
   onError: (m: string | null) => void
+  onChanged: () => void
 }) {
   const [active, setActive] = useState(promo.active)
   const [busy, setBusy] = useState<"toggle" | "delete" | null>(null)
@@ -86,7 +101,9 @@ function PromotionRow({
     if (!result.ok) {
       setActive(!next)
       onError(result.error ?? "변경에 실패했습니다.")
+      return
     }
+    onChanged()
   }
 
   async function remove() {
@@ -94,7 +111,11 @@ function PromotionRow({
     onError(null)
     const result = await deletePromotion(store.id, promo.id)
     setBusy(null)
-    if (!result.ok) onError(result.error ?? "삭제에 실패했습니다.")
+    if (!result.ok) {
+      onError(result.error ?? "삭제에 실패했습니다.")
+      return
+    }
+    onChanged()
   }
 
   return (
