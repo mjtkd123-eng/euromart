@@ -17,6 +17,7 @@ Legacy DB value `vendor` is treated as `owner`.
 - Unauthenticated visits to a gated area go to **that group’s login**.
 - The wrong role hitting another group’s page is sent to `/forbidden` (403 UI).
 - `/owner` is a public partner landing (login + apply CTAs). `/owner/dashboard` stays gated.
+- Pending owners cannot open `/owner/dashboard`; they stay on `/owner/pending`.
 - `/vendor/*` URLs redirect to `/owner/*` so old bookmarks keep working.
 
 ## Demo accounts (no Supabase)
