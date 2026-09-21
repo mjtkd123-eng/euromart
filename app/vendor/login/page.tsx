@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { AuthShell } from "@/components/auth/auth-shell"
-import { DEMO_ADMIN_EMAIL, DEMO_ADMIN_PASSWORD } from "@/lib/demo-admin-public"
+import { DEMO_ADMIN_EMAIL, DEMO_ADMIN_PASSWORD, DEMO_OWNER_EMAIL, DEMO_OWNER_PASSWORD } from "@/lib/demo-admin-public"
 
 function VendorLoginForm() {
   const router = useRouter()
@@ -100,9 +100,11 @@ function VendorLoginForm() {
         </Link>
       </p>
       <p className="mt-6 rounded-xl bg-muted/60 px-3 py-2 text-center text-[11px] leading-relaxed text-muted-foreground">
-        데모 본부 계정
+        데모 업주 (자기 매장만)
         <br />
-        {DEMO_ADMIN_EMAIL} / {DEMO_ADMIN_PASSWORD}
+        {DEMO_OWNER_EMAIL} / {DEMO_OWNER_PASSWORD}
+        <br />
+        <span className="mt-1 inline-block text-[10px]">본부 {DEMO_ADMIN_EMAIL} / {DEMO_ADMIN_PASSWORD}</span>
       </p>
     </AuthShell>
   )

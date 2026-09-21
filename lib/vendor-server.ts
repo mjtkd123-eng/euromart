@@ -2,7 +2,9 @@ import "server-only"
 import { createClient } from "@/lib/supabase/server"
 import type { Currency } from "@/lib/storesData"
 import { isSupabaseConfigured } from "@/lib/supabase/config"
-import { findStoreById, findUserById } from "@/lib/tenant-directory"
+import { findStoreById, findUserById, type DirectoryStore } from "@/lib/tenant-directory"
+import { DEMO_REGIONS } from "@/lib/demo-regions"
+import { assertStoreAccess } from "@/lib/tenant-guard"
 
 /* ------------------------------ 타입 ------------------------------ */
 
@@ -110,43 +112,14 @@ export interface VendorDashboardData {
 export async function getVendorDashboard(vendorId: string): Promise<VendorDashboardData | null> {
   if (!isSupabaseConfigured()) {
     const user = await findUserById(vendorId)
-    if (!user?.storeId) return null
-    const storeRow = await findStoreById(user.storeId)
-    if (!storeRow) return null
-    const store: VendorStore = {
-      id: storeRow.id,
-      city: storeRow.citySlug,
-      country: "EU",
-      countryCode: "EU",
-      storeKo: storeRow.name,
-      storeEn: storeRow.name,
-      announcementKo: "",
-      announcementEn: "",
-      heroTitleKo: storeRow.name,
-      heroTitleEn: storeRow.name,
-      heroSubtitleKo: storeRow.legalName,
-      heroSubtitleEn: storeRow.legalName,
-      deliveryFee: 0,
-      freeDeliveryOver: 0,
-      active: storeRow.status === "active",
-      currency: { code: storeRow.currencyCode, locale: "de-DE", decimals: 2 },
+    if (user?.role === "vendor" && !user.storeId) return null
+    if (user?.role === "vendor" && user.storeId) {
+      const storeRow = await findStoreById(user.storeId)
+      if (!storeRow) return null
+      assertStoreAccess({ role: "vendor", storeId: user.storeId }, storeRow.id)
+      return dashboardFromDirectoryStore(storeRow)
     }
-    return {
-      store,
-      listings: [],
-      catalog: [],
-      promotions: [],
-      orders: [],
-      stats: {
-        orderCount: 0,
-        revenue: 0,
-        lowStock: 0,
-        activeListings: 0,
-        todayOrderCount: 0,
-        todayRevenue: 0,
-        openOrderCount: 0,
-      },
-    }
+    return null
   }
 
   const supabase = await createClient()
@@ -272,6 +245,142 @@ export async function getVendorDashboard(vendorId: string): Promise<VendorDashbo
 
 /** 처리 대기로 간주하는 주문 상태 (판매자 액션이 필요한 상태) */
 const OPEN_ORDER_STATUSES = new Set(["pending", "packed", "awaiting_courier", "confirmed"])
+
+function dashboardFromDirectoryStore(storeRow: DirectoryStore): VendorDashboardData {
+  const region = DEMO_REGIONS.find((r) => r.id === storeRow.citySlug) ?? null
+  const currency: Currency = region?.currency ?? {
+    code: storeRow.currencyCode || "EUR",
+    locale: "de-AT",
+    decimals: 2,
+  }
+  const store: VendorStore = {
+    id: storeRow.id,
+    city: region?.city ?? storeRow.citySlug,
+    country: region?.country ?? "EU",
+    countryCode: region?.countryCode ?? "EU",
+    storeKo: storeRow.name,
+    storeEn: region?.store.en ?? storeRow.name,
+    announcementKo: region?.announcement.ko ?? "",
+    announcementEn: region?.announcement.en ?? "",
+    heroTitleKo: region?.hero.title.ko ?? storeRow.name,
+    heroTitleEn: region?.hero.title.en ?? storeRow.name,
+    heroSubtitleKo: region?.hero.subtitle.ko ?? storeRow.legalName,
+    heroSubtitleEn: region?.hero.subtitle.en ?? storeRow.legalName,
+    deliveryFee: region?.deliveryFee ?? 0,
+    freeDeliveryOver: region?.freeDeliveryOver ?? 0,
+    active: storeRow.status === "active",
+    currency,
+  }
+
+  const stocks = [4, 9, 22, 41, 7, 16, 3, 28]
+  const listings: VendorListing[] = (region?.products ?? []).map((p, i) => ({
+    id: `${storeRow.id}:${p.id}`,
+    productId: p.id,
+    nameKo: p.nameKo,
+    nameEn: p.nameEn,
+    category: p.category,
+    image: p.image,
+    unit: p.unit,
+    brand: p.brand,
+    price: p.price,
+    stock: p.outOfStock ? 0 : stocks[i % stocks.length],
+    featured: p.featured,
+    active: true,
+  }))
+
+  const listedIds = new Set(listings.map((l) => l.productId))
+  const catalog: CatalogOption[] = DEMO_REGIONS.flatMap((r) => r.products)
+    .filter((p, idx, all) => all.findIndex((x) => x.id === p.id) === idx && !listedIds.has(p.id))
+    .map((p) => ({ id: p.id, nameKo: p.nameKo, nameEn: p.nameEn, category: p.category }))
+
+  const promotions: VendorPromotion[] = region
+    ? [
+        {
+          id: `${storeRow.id}:promo-welcome`,
+          code: "KIMCHI10",
+          descriptionKo: "김치·반찬 10% 할인",
+          descriptionEn: "10% off kimchi & banchan",
+          discountType: "percent",
+          discountValue: 10,
+          minOrder: region.freeDeliveryOver / 2,
+          active: true,
+        },
+      ]
+    : []
+
+  const orders = demoOrdersForStore(storeRow, listings, store)
+  return {
+    store,
+    listings,
+    catalog,
+    promotions,
+    orders,
+    stats: buildStats(orders, listings),
+  }
+}
+
+function demoOrdersForStore(
+  storeRow: DirectoryStore,
+  listings: VendorListing[],
+  store: VendorStore,
+): VendorOrder[] {
+  if (listings.length === 0) return []
+  const a = listings[0]
+  const b = listings[1] ?? listings[0]
+  const c = listings[2] ?? listings[0]
+  const now = Date.now()
+  const hour = 60 * 60 * 1000
+  return [
+    {
+      id: `KEM-${storeRow.citySlug.toUpperCase()}-1042`,
+      customerName: "김민호",
+      address: storeRow.address,
+      phone: "+43 660 555 1042",
+      subtotal: a.price * 2 + b.price,
+      deliveryFee: store.deliveryFee,
+      discount: 0,
+      total: a.price * 2 + b.price + store.deliveryFee,
+      promoCode: null,
+      status: "pending",
+      createdAt: new Date(now - 0.4 * hour).toISOString(),
+      items: [
+        { nameKo: a.nameKo, quantity: 2, price: a.price },
+        { nameKo: b.nameKo, quantity: 1, price: b.price },
+      ],
+    },
+    {
+      id: `KEM-${storeRow.citySlug.toUpperCase()}-1038`,
+      customerName: "Laura H.",
+      address: storeRow.address,
+      phone: "+43 699 441 1038",
+      subtotal: c.price * 3,
+      deliveryFee: 0,
+      discount: 0,
+      total: c.price * 3,
+      promoCode: "KIMCHI10",
+      status: "awaiting_courier",
+      createdAt: new Date(now - 1.2 * hour).toISOString(),
+      items: [{ nameKo: c.nameKo, quantity: 3, price: c.price }],
+    },
+    {
+      id: `KEM-${storeRow.citySlug.toUpperCase()}-1021`,
+      customerName: "한지우",
+      address: storeRow.address,
+      phone: "+43 676 220 1021",
+      subtotal: a.price + c.price,
+      deliveryFee: store.deliveryFee,
+      discount: 0,
+      total: a.price + c.price + store.deliveryFee,
+      promoCode: null,
+      status: "delivered",
+      createdAt: new Date(now - 26 * hour).toISOString(),
+      items: [
+        { nameKo: a.nameKo, quantity: 1, price: a.price },
+        { nameKo: c.nameKo, quantity: 1, price: c.price },
+      ],
+    },
+  ]
+}
 
 function buildStats(orders: VendorOrder[], listings: VendorListing[]): VendorStats {
   const startOfToday = new Date()

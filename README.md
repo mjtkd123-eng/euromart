@@ -62,7 +62,9 @@ Open `/help/contact` or the **상담하기** button on the shop.
 
 Store owners cannot self-sign-up. Super Admin reviews documents, then issues a store + owner account. Passwords are bcrypt hashes only.
 
-- Login: `/vendor/login` (demo HQ `admin@k-euromart.demo` / `EuroMart-Admin-2026!`)
+- Login: `/vendor/login`
+  - 업주 데모 `owner.vienna@k-euromart.demo` / `EuroMart-Owner-2026!` (비엔나 1호점만)
+  - 본부 데모 `admin@k-euromart.demo` / `EuroMart-Admin-2026!`
 - First login must change password: `/auth/change-password`
 - Spec: `docs/vendor-tenant-auth.md`
 

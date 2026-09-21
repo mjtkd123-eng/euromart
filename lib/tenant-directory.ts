@@ -2,7 +2,7 @@ import "server-only"
 import { mkdir, readFile, writeFile } from "node:fs/promises"
 import path from "node:path"
 import { generateActionToken, generateTemporaryPassword, hashPassword, hashToken, verifyPassword } from "@/lib/password"
-import { DEMO_ADMIN_EMAIL, DEMO_ADMIN_PASSWORD } from "@/lib/demo-admin-public"
+import { DEMO_ADMIN_EMAIL, DEMO_ADMIN_PASSWORD, DEMO_OWNER_EMAIL, DEMO_OWNER_PASSWORD } from "@/lib/demo-admin-public"
 
 export type StoreStatus = "pending" | "active" | "inactive"
 
@@ -80,6 +80,8 @@ const FILE = path.join(process.cwd(), ".data", "tenant-auth.json")
 async function empty(): Promise<DirectoryFile> {
   const now = new Date().toISOString()
   const adminId = crypto.randomUUID()
+  const ownerId = "a11ce0e0-0000-4000-8000-000000000001"
+  const storeId = "a11ce0e0-0000-4000-8000-0000000000aa"
   return {
     users: [
       {
@@ -93,8 +95,32 @@ async function empty(): Promise<DirectoryFile> {
         passwordChangedAt: now,
         createdAt: now,
       },
+      {
+        id: ownerId,
+        email: DEMO_OWNER_EMAIL,
+        fullName: "박서연",
+        role: "vendor",
+        storeId,
+        passwordHash: await hashPassword(DEMO_OWNER_PASSWORD),
+        mustChangePassword: false,
+        passwordChangedAt: now,
+        createdAt: now,
+      },
     ],
-    stores: [],
+    stores: [
+      {
+        id: storeId,
+        name: "K-EuroMart 비엔나 1호점",
+        legalName: "HanMart Vienna GmbH",
+        businessNumber: "ATU-10998877",
+        citySlug: "vienna",
+        currencyCode: "EUR",
+        address: "Kettenbrückengasse 19, 1050 Wien",
+        status: "active",
+        ownerUserId: ownerId,
+        createdAt: now,
+      },
+    ],
     applications: [
       {
         id: crypto.randomUUID(),

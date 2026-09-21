@@ -1,6 +1,6 @@
 import "server-only"
 import { recordMail } from "@/lib/tenant-directory"
-import { MAIL_FROM_DEFAULT }
+import { MAIL_FROM_DEFAULT } from "@/lib/site"
 
 export async function sendOwnerCredentials(input: {
   to: string
