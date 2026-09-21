@@ -64,7 +64,7 @@ export function AccountMenu() {
             <p className="truncate text-xs text-muted-foreground">
               {user.role === "admin"
                 ? t("roleAdmin")
-                : user.role === "vendor"
+                : user.role === "owner" || user.role === "vendor"
                   ? t("roleVendor")
                   : t("roleCustomer")}
             </p>
@@ -90,10 +90,10 @@ export function AccountMenu() {
             {t("helpCenter")}
           </Link>
 
-          {user.role === "vendor" && (
+          {(user.role === "owner" || user.role === "vendor") && (
             <>
               <Link
-                href="/vendor"
+                href="/owner/dashboard"
                 role="menuitem"
                 className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
                 onClick={() => setOpen(false)}
@@ -102,7 +102,7 @@ export function AccountMenu() {
                 {t("vendorDashboard")}
               </Link>
               <Link
-                href="/vendor/claims"
+                href="/owner/claims"
                 role="menuitem"
                 className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
                 onClick={() => setOpen(false)}
@@ -124,7 +124,7 @@ export function AccountMenu() {
           {user.role === "admin" && (
             <>
               <Link
-                href="/admin"
+                href="/admin/dashboard"
                 role="menuitem"
                 className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
                 onClick={() => setOpen(false)}

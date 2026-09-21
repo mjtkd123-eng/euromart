@@ -63,6 +63,17 @@ export function EuromartFooter() {
         <p className="text-xs text-muted-foreground">
           {t("footerTagline")} · k-euromart.com
         </p>
+        <p className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+          <a href="/auth/login" className="underline-offset-2 hover:text-primary hover:underline">
+            회원 로그인
+          </a>
+          <a href="/owner/login" className="underline-offset-2 hover:text-primary hover:underline">
+            업주 파트너
+          </a>
+          <a href="/admin/login" className="underline-offset-2 hover:text-primary hover:underline">
+            플랫폼 관리자
+          </a>
+        </p>
       </div>
     </footer>
   )

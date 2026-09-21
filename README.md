@@ -58,15 +58,24 @@ The Help Center and storefront include a 1:1 CS chat that follows the mart × Bo
 
 Open `/help/contact` or the **상담하기** button on the shop.
 
-## Vendor (store owner) admin
+## Accounts (customer / owner / admin)
 
-Store owners cannot self-sign-up. Super Admin reviews documents, then issues a store + owner account. Passwords are bcrypt hashes only.
+Login and signup are **fully separated by role**. See `docs/auth-roles.md`.
 
-- Login: `/vendor/login`
-  - 업주 데모 `owner.vienna@k-euromart.demo` / `EuroMart-Owner-2026!` (비엔나 1호점만)
-  - 본부 데모 `admin@k-euromart.demo` / `EuroMart-Admin-2026!`
-- First login must change password: `/auth/change-password`
-- Spec: `docs/vendor-tenant-auth.md`
+| Who | Signup | Login | Home |
+|---|---|---|---|
+| 일반 회원 (`customer`) | `/auth/sign-up` | `/auth/login` | `/account` |
+| 업주 파트너 (`owner`) | `/owner/signup` (승인 전까지 pending) | `/owner/login` | `/owner/dashboard` |
+| 플랫폼 관리자 (`admin`) | 없음 (시드 전용) | `/admin/login` | `/admin/dashboard` |
+
+Demo passwords (bcrypt in `.data/tenant-auth.json`):
+
+- 회원 `customer@k-euromart.demo` / `EuroMart-Customer-2026!`
+- 업주 `owner.vienna@k-euromart.demo` / `EuroMart-Owner-2026!` (비엔나 1호점만)
+- 본부 `admin@k-euromart.demo` / `EuroMart-Admin-2026!`
+
+First login with a HQ-issued temp password must change it at `/auth/change-password`.
+Old `/vendor/login` URLs redirect to `/owner/login`.
 
 
 ## Hybrid CS, claims & insurance
@@ -75,7 +84,7 @@ Claim routing (micro / medium / high, 2-hour merchant SLA, food-safety Tier 2, F
 
 - Schema: `supabase/migrations/20260916_hybrid_cs_claims.sql` (`claims`, `escalations`, `settlements`, `fds_logs`)
 - Engine: `lib/claims-routing.ts`
-- Preview (staff only): `/ops/claims` — vendor and admin. Hidden from the customer Help Center. In this demo (no login) the page still opens so you can preview; with Supabase auth, customers are redirected home.
+- Preview (staff only): `/ops/claims` — owner and admin. Hidden from the customer Help Center. Unauthenticated visits redirect to `/owner/login`.
 - Crons (Bearer `CRON_SECRET`): `/api/cron/sweep-claim-sla` every 5 minutes, `/api/cron/gdpr-retention` daily 05:00 UTC
 
 ```bash

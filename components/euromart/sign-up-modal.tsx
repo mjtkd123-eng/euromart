@@ -4,7 +4,6 @@ import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { ShieldCheck, UserPlus } from "lucide-react"
-import { createClient } from "@/lib/supabase/client"
 import { useEuromart } from "@/lib/euromart-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -20,6 +19,7 @@ import type { Lang } from "@/lib/i18n"
 import { TermsConsent } from "./terms-consent"
 
 function signUpErrorMessage(error: unknown, lang: Lang): string {
+  if (typeof error === "string" && error.trim()) return error
   const { code, status } = (error ?? {}) as { code?: string; status?: number }
   const ko = lang === "ko"
 
@@ -90,24 +90,20 @@ export function SignUpModal() {
 
     setIsLoading(true)
     try {
-      const supabase = createClient()
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo:
-            process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ??
-            `${window.location.origin}/auth/callback`,
-          data: {
-            role: "customer",
-            terms_accepted_at: new Date().toISOString(),
-            terms_version: "2026-08-eu-gdpr",
-          },
-        },
+      const res = await fetch("/api/auth/customer/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          password,
+          fullName: email.split("@")[0] || "회원",
+        }),
       })
-      if (error) throw error
+      const data = await res.json()
+      if (!res.ok) throw data.error ?? "sign-up failed"
       handleOpenChange(false)
-      router.push("/auth/sign-up-success")
+      router.push(data.redirectTo ?? "/auth/sign-up-success")
+      router.refresh()
     } catch (err: unknown) {
       console.error("[v0] Sign-up error:", err)
       setError(signUpErrorMessage(err, lang))

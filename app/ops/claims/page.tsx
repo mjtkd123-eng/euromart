@@ -15,8 +15,8 @@ export const dynamic = "force-dynamic"
 
 export default async function OpsClaimsPolicyPage() {
   const staff = await requireStaff("/ops/claims")
-  const backHref = staff.demo ? "/" : staff.role === "vendor" ? "/vendor/claims" : "/admin"
-  const backLabel = staff.demo ? "스토어" : staff.role === "vendor" ? "환불·분쟁 관리" : "관리자 콘솔"
+  const backHref = staff.demo ? "/" : staff.role === "admin" ? "/admin/dashboard" : "/owner/claims"
+  const backLabel = staff.demo ? "스토어" : staff.role === "admin" ? "관리자 콘솔" : "환불·분쟁 관리"
 
   return (
     <div className="min-h-screen bg-background">

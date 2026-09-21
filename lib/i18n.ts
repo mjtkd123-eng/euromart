@@ -209,9 +209,10 @@ const dict = {
   myAccount: { ko: "내 계정", en: "My account" },
   accountMenu: { ko: "계정 메뉴", en: "Account menu" },
   roleAdmin: { ko: "관리자", en: "Administrator" },
-  roleVendor: { ko: "판매자", en: "Store owner" },
-  roleCustomer: { ko: "고객", en: "Customer" },
-  vendorDashboard: { ko: "판매자 대시보드", en: "Store dashboard" },
+  roleVendor: { ko: "업주(파트너)", en: "Store partner" },
+  roleOwner: { ko: "업주(파트너)", en: "Store partner" },
+  roleCustomer: { ko: "일반 회원", en: "Customer" },
+  vendorDashboard: { ko: "업주 대시보드", en: "Owner dashboard" },
   adminConsole: { ko: "관리자 콘솔", en: "Admin console" },
   orderHistory: {
     ko: "주문 내역 · 환불 신고",

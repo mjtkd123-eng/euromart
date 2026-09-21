@@ -18,6 +18,13 @@ const nextConfig = {
     unoptimized: true,
   },
   serverExternalPackages: ["bcryptjs"],
+  async redirects() {
+    return [
+      { source: "/vendor", destination: "/owner/dashboard", permanent: false },
+      { source: "/vendor/login", destination: "/owner/login", permanent: false },
+      { source: "/vendor/claims", destination: "/owner/claims", permanent: false },
+    ]
+  },
 }
 
 export default nextConfig

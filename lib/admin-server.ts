@@ -24,7 +24,7 @@ export interface AdminUser {
   id: string
   email: string
   fullName: string
-  role: "customer" | "vendor" | "admin"
+  role: "customer" | "vendor" | "owner" | "admin"
   assignedRegion: string | null
 }
 
@@ -210,7 +210,7 @@ export async function getAdminDashboard(): Promise<AdminDashboardData> {
     stats: {
       regionCount: regions.length,
       activeRegions: regions.filter((r) => r.active).length,
-      vendorCount: users.filter((u) => u.role === "vendor").length,
+      vendorCount: users.filter((u) => u.role === "vendor" || u.role === "owner").length,
       unassignedRegions: regions.filter((r) => !r.vendorId).length,
       productCount: products.length,
       orderCount: orders.length,

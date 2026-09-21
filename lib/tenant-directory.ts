@@ -1,8 +1,16 @@
 import "server-only"
 import { mkdir, readFile, writeFile } from "node:fs/promises"
 import path from "node:path"
-import { generateActionToken, generateTemporaryPassword, hashPassword, hashToken, verifyPassword } from "@/lib/password"
-import { DEMO_ADMIN_EMAIL, DEMO_ADMIN_PASSWORD, DEMO_OWNER_EMAIL, DEMO_OWNER_PASSWORD } from "@/lib/demo-admin-public"
+import { generateActionToken, generateTemporaryPassword, hashPassword, hashToken, isStrongPassword, verifyPassword } from "@/lib/password"
+import {
+  DEMO_ADMIN_EMAIL,
+  DEMO_ADMIN_PASSWORD,
+  DEMO_CUSTOMER_EMAIL,
+  DEMO_CUSTOMER_PASSWORD,
+  DEMO_OWNER_EMAIL,
+  DEMO_OWNER_PASSWORD,
+} from "@/lib/demo-admin-public"
+import { canonicalizeRole, type AccountStatus, type Role } from "@/lib/roles"
 
 export type StoreStatus = "pending" | "active" | "inactive"
 
@@ -12,12 +20,13 @@ export interface DirectoryUser {
   id: string
   email: string
   fullName: string
-  role: "vendor" | "admin"
+  role: Role
   storeId: string | null
   /** bcrypt hash only — never plaintext */
   passwordHash: string
   mustChangePassword: boolean
   passwordChangedAt: string | null
+  accountStatus: AccountStatus
   createdAt: string
 }
 
@@ -74,6 +83,10 @@ export interface DirectoryApplication {
   createdStoreId: string | null
   createdAt: string
   reviewedAt: string | null
+  ownerUserId: string | null
+  address: string
+  phone: string
+  source: "offline" | "self_signup"
 }
 
 export interface DirectoryToken {
@@ -109,6 +122,7 @@ async function empty(): Promise<DirectoryFile> {
   const now = new Date().toISOString()
   const adminId = crypto.randomUUID()
   const ownerId = "a11ce0e0-0000-4000-8000-000000000001"
+  const customerId = "a11ce0e0-0000-4000-8000-0000000000c1"
   const storeId = "a11ce0e0-0000-4000-8000-0000000000aa"
   return {
     users: [
@@ -121,17 +135,31 @@ async function empty(): Promise<DirectoryFile> {
         passwordHash: await hashPassword(DEMO_ADMIN_PASSWORD),
         mustChangePassword: false,
         passwordChangedAt: now,
+        accountStatus: "active",
         createdAt: now,
       },
       {
         id: ownerId,
         email: DEMO_OWNER_EMAIL,
         fullName: "박서연",
-        role: "vendor",
+        role: "owner",
         storeId,
         passwordHash: await hashPassword(DEMO_OWNER_PASSWORD),
         mustChangePassword: false,
         passwordChangedAt: now,
+        accountStatus: "active",
+        createdAt: now,
+      },
+      {
+        id: customerId,
+        email: DEMO_CUSTOMER_EMAIL,
+        fullName: "김손님",
+        role: "customer",
+        storeId: null,
+        passwordHash: await hashPassword(DEMO_CUSTOMER_PASSWORD),
+        mustChangePassword: false,
+        passwordChangedAt: now,
+        accountStatus: "active",
         createdAt: now,
       },
     ],
@@ -164,6 +192,10 @@ async function empty(): Promise<DirectoryFile> {
         createdStoreId: null,
         createdAt: now,
         reviewedAt: null,
+        ownerUserId: null,
+        address: "Kettenbrückengasse 21, 1050 Wien",
+        phone: "+43 1 555 0199",
+        source: "offline",
       },
     ],
     tokens: [],
@@ -206,18 +238,54 @@ function normalize(data: DirectoryFile): DirectoryFile {
     }
   }
   if (!Array.isArray(data.listingOverrides)) data.listingOverrides = []
+  for (const user of data.users) {
+    user.role = canonicalizeRole(user.role)
+    if (user.accountStatus !== "pending" && user.accountStatus !== "rejected") {
+      user.accountStatus = "active"
+    }
+  }
+  for (const app of data.applications) {
+    if (app.ownerUserId === undefined) app.ownerUserId = null
+    if (!app.address) app.address = ""
+    if (!app.phone) app.phone = ""
+    if (app.source !== "self_signup") app.source = "offline"
+  }
   return data
 }
 
 async function loadUnlocked(): Promise<DirectoryFile> {
   try {
     const raw = await readFile(FILE, "utf8")
-    return normalize(JSON.parse(raw) as DirectoryFile)
+    const data = normalize(JSON.parse(raw) as DirectoryFile)
+    const changed = await ensureDemoAccounts(data)
+    if (changed) await persist(data)
+    return data
   } catch {
     const seeded = await empty()
     await persist(seeded)
     return seeded
   }
+}
+
+async function ensureDemoAccounts(data: DirectoryFile): Promise<boolean> {
+  let changed = false
+  const now = new Date().toISOString()
+  if (!data.users.some((u) => u.email.toLowerCase() === DEMO_CUSTOMER_EMAIL)) {
+    data.users.push({
+      id: "a11ce0e0-0000-4000-8000-0000000000c1",
+      email: DEMO_CUSTOMER_EMAIL,
+      fullName: "김손님",
+      role: "customer",
+      storeId: null,
+      passwordHash: await hashPassword(DEMO_CUSTOMER_PASSWORD),
+      mustChangePassword: false,
+      passwordChangedAt: now,
+      accountStatus: "active",
+      createdAt: now,
+    })
+    changed = true
+  }
+  return changed
 }
 
 async function persist(data: DirectoryFile): Promise<void> {
@@ -258,7 +326,7 @@ export async function listStores(): Promise<DirectoryStore[]> {
 export async function listOwners(): Promise<Omit<DirectoryUser, "passwordHash">[]> {
   return read((data) =>
     data.users
-      .filter((u) => u.role === "vendor")
+      .filter((u) => canonicalizeRole(u.role) === "owner")
       .map(({ passwordHash: _h, ...rest }) => rest),
   )
 }
@@ -365,11 +433,12 @@ export async function createStoreAndOwner(input: CreateStoreInput): Promise<Crea
       id: userId,
       email,
       fullName: input.ownerName.trim() || email,
-      role: "vendor",
+      role: "owner",
       storeId,
       passwordHash,
       mustChangePassword: true,
       passwordChangedAt: null,
+      accountStatus: "active",
       createdAt: now,
     }
 
@@ -405,6 +474,12 @@ export async function rejectApplication(id: string, reason: string): Promise<boo
     app.status = "rejected"
     app.rejectionReason = reason.trim() || "서류 미비"
     app.reviewedAt = new Date().toISOString()
+    if (app.ownerUserId) {
+      const owner = data.users.find((u) => u.id === app.ownerUserId)
+      if (owner && canonicalizeRole(owner.role) === "owner") {
+        owner.accountStatus = "rejected"
+      }
+    }
     return true
   })
 }
@@ -563,5 +638,152 @@ export async function updateDirectoryStore(
     if (!store) return false
     Object.assign(store, patch)
     return true
+  })
+}
+
+export interface CustomerSignupInput {
+  email: string
+  password: string
+  fullName: string
+}
+
+export async function signupCustomer(
+  input: CustomerSignupInput,
+): Promise<{ ok: true; user: Omit<DirectoryUser, "passwordHash"> } | { error: string }> {
+  const email = input.email.trim().toLowerCase()
+  if (!email || !email.includes("@")) return { error: "유효한 이메일이 필요합니다." }
+  if (!isStrongPassword(input.password)) {
+    return { error: "비밀번호는 10자 이상, 영문 대·소문자와 숫자를 포함해야 합니다." }
+  }
+  if (!input.fullName.trim()) return { error: "이름을 입력하세요." }
+
+  return mutate(async (data) => {
+    if (data.users.some((u) => u.email.toLowerCase() === email)) {
+      return { error: "이미 가입된 이메일입니다." }
+    }
+    const now = new Date().toISOString()
+    const user: DirectoryUser = {
+      id: crypto.randomUUID(),
+      email,
+      fullName: input.fullName.trim(),
+      role: "customer",
+      storeId: null,
+      passwordHash: await hashPassword(input.password),
+      mustChangePassword: false,
+      passwordChangedAt: now,
+      accountStatus: "active",
+      createdAt: now,
+    }
+    data.users.push(user)
+    const { passwordHash: _omit, ...safe } = user
+    return { ok: true as const, user: safe }
+  })
+}
+
+export interface OwnerSignupInput {
+  email: string
+  password: string
+  fullName: string
+  storeName: string
+  legalName: string
+  businessNumber: string
+  citySlug: string
+  address: string
+  phone: string
+  documentsNote: string
+}
+
+export async function signupOwnerApplication(
+  input: OwnerSignupInput,
+): Promise<{ ok: true; applicationId: string } | { error: string }> {
+  const email = input.email.trim().toLowerCase()
+  if (!email || !email.includes("@")) return { error: "유효한 이메일이 필요합니다." }
+  if (!isStrongPassword(input.password)) {
+    return { error: "비밀번호는 10자 이상, 영문 대·소문자와 숫자를 포함해야 합니다." }
+  }
+  if (!input.fullName.trim()) return { error: "담당자 이름을 입력하세요." }
+  if (!input.storeName.trim()) return { error: "매장명을 입력하세요." }
+  if (!input.businessNumber.trim()) return { error: "사업자등록번호를 입력하세요." }
+
+  return mutate(async (data) => {
+    if (data.users.some((u) => u.email.toLowerCase() === email)) {
+      return { error: "이미 등록된 이메일입니다." }
+    }
+    const now = new Date().toISOString()
+    const userId = crypto.randomUUID()
+    const applicationId = crypto.randomUUID()
+    const owner: DirectoryUser = {
+      id: userId,
+      email,
+      fullName: input.fullName.trim(),
+      role: "owner",
+      storeId: null,
+      passwordHash: await hashPassword(input.password),
+      mustChangePassword: false,
+      passwordChangedAt: now,
+      accountStatus: "pending",
+      createdAt: now,
+    }
+    const application: DirectoryApplication = {
+      id: applicationId,
+      storeName: input.storeName.trim(),
+      legalName: input.legalName.trim() || input.storeName.trim(),
+      businessNumber: input.businessNumber.trim(),
+      citySlug: input.citySlug.trim() || "budapest",
+      contactEmail: email,
+      contactName: input.fullName.trim(),
+      documentsNote: input.documentsNote.trim() || "온라인 입점 신청",
+      status: "submitted",
+      rejectionReason: null,
+      createdStoreId: null,
+      createdAt: now,
+      reviewedAt: null,
+      ownerUserId: userId,
+      address: input.address.trim(),
+      phone: input.phone.trim(),
+      source: "self_signup",
+    }
+    data.users.push(owner)
+    data.applications.push(application)
+    return { ok: true as const, applicationId }
+  })
+}
+
+export async function approveOwnerApplication(
+  applicationId: string,
+): Promise<{ ok: true; storeId: string; email: string } | { error: string }> {
+  return mutate((data) => {
+    const app = data.applications.find((a) => a.id === applicationId)
+    if (!app) return { error: "서류를 찾을 수 없습니다." }
+    if (app.status === "approved") return { error: "이미 승인된 신청입니다." }
+    if (app.status === "rejected") return { error: "반려된 신청은 승인할 수 없습니다." }
+    if (!app.ownerUserId) {
+      return { error: "온라인 가입 계정이 없습니다. 수동 발급 폼을 사용하세요." }
+    }
+    const owner = data.users.find((u) => u.id === app.ownerUserId)
+    if (!owner) return { error: "업주 계정을 찾을 수 없습니다." }
+
+    const now = new Date().toISOString()
+    const storeId = crypto.randomUUID()
+    const store: DirectoryStore = {
+      id: storeId,
+      name: app.storeName,
+      legalName: app.legalName || app.storeName,
+      businessNumber: app.businessNumber,
+      citySlug: app.citySlug || "budapest",
+      currencyCode: "EUR",
+      address: app.address || "—",
+      status: "active",
+      ownerUserId: owner.id,
+      createdAt: now,
+    }
+    data.stores.push(store)
+    owner.role = "owner"
+    owner.storeId = storeId
+    owner.accountStatus = "active"
+    app.status = "approved"
+    app.createdStoreId = storeId
+    app.reviewedAt = now
+    return { ok: true as const, storeId, email: owner.email }
   })
 }

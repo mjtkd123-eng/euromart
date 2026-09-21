@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,8 +13,10 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 function signUpErrorMessage(error: unknown, lang: Lang): string {
-  const { code, status } = (error ?? {}) as { code?: string; status?: number }
+  if (typeof error === "string" && error.trim()) return error
+  const { code, status, message } = (error ?? {}) as { code?: string; status?: number; message?: string }
   const ko = lang === "ko"
+  if (typeof message === "string" && message.includes("이미")) return message
 
   if (code === "weak_password") {
     return ko ? "더 강력한 비밀번호를 선택해 주세요." : "Please choose a stronger password."
@@ -68,22 +69,15 @@ export default function SignUpPage() {
     }
 
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo:
-            process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ?? `${window.location.origin}/auth/callback`,
-          data: {
-            full_name: fullName,
-            role: "customer",
-            terms_accepted_at: new Date().toISOString(),
-            terms_version: "2026-08-eu-gdpr",
-          },
-        },
+      const res = await fetch("/api/auth/customer/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, fullName }),
       })
-      if (error) throw error
-      router.push("/auth/sign-up-success")
+      const data = await res.json()
+      if (!res.ok) throw data.error ?? "sign-up failed"
+      router.push(data.redirectTo ?? "/auth/sign-up-success")
+      router.refresh()
     } catch (error: unknown) {
       console.error("[v0] Sign-up error:", error)
       setError(signUpErrorMessage(error, lang))
@@ -128,6 +122,9 @@ export default function SignUpPage() {
             onChange={(e) => setPassword(e.target.value)}
             className="h-11"
           />
+          <p className="text-[11px] text-muted-foreground">
+            {lang === "ko" ? "10자 이상, 영문 대·소문자와 숫자 포함" : "At least 10 characters with upper, lower, and a number."}
+          </p>
         </div>
         <div className="grid gap-2">
           <Label htmlFor="repeat-password">{t("repeatPasswordLabel")}</Label>
@@ -165,6 +162,12 @@ export default function SignUpPage() {
         {t("alreadyMember")}{" "}
         <Link href="/auth/login" className="font-semibold text-primary underline-offset-4 hover:underline">
           {t("loginTitle")}
+        </Link>
+      </p>
+      <p className="mt-3 text-center text-xs text-muted-foreground">
+        마트 업주이신가요?{" "}
+        <Link href="/owner/signup" className="font-semibold text-primary underline-offset-4 hover:underline">
+          업주 입점 신청
         </Link>
       </p>
     </AuthShell>

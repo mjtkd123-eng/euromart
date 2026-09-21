@@ -32,7 +32,7 @@ export default function ForgotPasswordPage() {
       {done ? (
         <p className="text-sm leading-relaxed text-muted-foreground">
           해당 이메일이 업주 계정으로 등록되어 있으면 안내를 보냈습니다.{" "}
-          <Link href="/vendor/login" className="font-semibold text-primary">
+          <Link href="/owner/login" className="font-semibold text-primary">
             로그인으로
           </Link>
         </p>

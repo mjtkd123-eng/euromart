@@ -17,8 +17,8 @@ const PASSWORD = "EuroMart!2026"
 // Vendor scoping lives on regions.vendor_id — profiles has no region column.
 const users = [
   { email: "admin@keuromart.com", fullName: "본사 관리자", role: "admin", regionId: null },
-  { email: "budapest@keuromart.com", fullName: "부다페스트 점주", role: "vendor", regionId: "budapest" },
-  { email: "berlin@keuromart.com", fullName: "베를린 점주", role: "vendor", regionId: "berlin" },
+  { email: "budapest@keuromart.com", fullName: "부다페스트 점주", role: "owner", regionId: "budapest" },
+  { email: "berlin@keuromart.com", fullName: "베를린 점주", role: "owner", regionId: "berlin" },
   { email: "customer@keuromart.com", fullName: "김손님", role: "customer", regionId: null },
 ]
 

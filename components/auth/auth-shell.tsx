@@ -5,10 +5,12 @@ export function AuthShell({
   title,
   subtitle,
   children,
+  wide = false,
 }: {
   title: string
   subtitle: string
   children?: React.ReactNode
+  wide?: boolean
 }) {
   return (
     <div className="flex min-h-svh w-full flex-col items-center justify-center gap-6 bg-muted/40 p-6 md:p-10">
@@ -21,7 +23,11 @@ export function AuthShell({
         </span>
       </Link>
 
-      <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
+      <div
+        className={`w-full rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8 ${
+          wide ? "max-w-lg" : "max-w-sm"
+        }`}
+      >
         <div className="mb-6 flex flex-col gap-1 text-center">
           <h1 className="text-2xl font-black text-foreground text-balance">{title}</h1>
           <p className="text-sm text-muted-foreground text-pretty">{subtitle}</p>

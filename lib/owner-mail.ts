@@ -16,7 +16,7 @@ export async function sendOwnerCredentials(input: {
     "",
     `입점 서류 검토가 완료되어 '${input.storeName}' 업주 계정이 발급되었습니다.`,
     "",
-    `로그인: ${input.origin}/vendor/login`,
+    `로그인: ${input.origin}/owner/login`,
     `이메일: ${input.to}`,
     `임시 비밀번호: ${input.temporaryPassword}`,
     "",
@@ -62,7 +62,7 @@ export async function sendPasswordResetMail(input: {
   const body = [
     "비밀번호 재설정 요청이 있었습니다.",
     `링크 (2시간): ${input.resetUrl}`,
-    `로그인: ${input.origin}/vendor/login`,
+    `로그인: ${input.origin}/owner/login`,
     "요청하지 않았다면 이 메일을 무시하세요.",
   ].join("\n")
   await recordMail(input.to, subject, body)

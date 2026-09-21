@@ -37,7 +37,7 @@ export function RegionsManager({
   const [notice, setNotice] = useState<{ tone: "error" | "success"; text: string } | null>(null)
   const [pending, startTransition] = useTransition()
 
-  const vendorOptions = users.filter((u) => u.role === "vendor" || u.role === "admin")
+  const vendorOptions = users.filter((u) => u.role === "vendor" || u.role === "owner" || u.role === "admin")
 
   function startNew() {
     setEditingId(null)

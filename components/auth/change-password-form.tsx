@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { AuthShell } from "@/components/auth/auth-shell"
 
+import { homePathForRole, type Role } from "@/lib/roles"
+
 export function ChangePasswordForm({
   email,
   firstLogin,
@@ -14,7 +16,7 @@ export function ChangePasswordForm({
 }: {
   email: string
   firstLogin: boolean
-  role: "vendor" | "admin"
+  role: Role | "vendor"
 }) {
   const router = useRouter()
   const [currentPassword, setCurrent] = useState("")
@@ -42,7 +44,7 @@ export function ChangePasswordForm({
       setError(data.error ?? "변경에 실패했습니다.")
       return
     }
-    router.push(data.redirectTo ?? (role === "admin" ? "/admin" : "/vendor"))
+    router.push(data.redirectTo ?? homePathForRole(role))
     router.refresh()
   }
 

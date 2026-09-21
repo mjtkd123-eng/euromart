@@ -5,6 +5,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/config"
 import { findStoreById, findUserById, listDirectoryPromotions, listListingOverrides, type DirectoryStore } from "@/lib/tenant-directory"
 import { DEMO_REGIONS } from "@/lib/demo-regions"
 import { assertStoreAccess } from "@/lib/tenant-guard"
+import { isOwnerRole } from "@/lib/roles"
 
 /* ------------------------------ 타입 ------------------------------ */
 
@@ -112,11 +113,11 @@ export interface VendorDashboardData {
 export async function getVendorDashboard(vendorId: string): Promise<VendorDashboardData | null> {
   if (!isSupabaseConfigured()) {
     const user = await findUserById(vendorId)
-    if (user?.role === "vendor" && !user.storeId) return null
-    if (user?.role === "vendor" && user.storeId) {
+    if (isOwnerRole(user?.role) && !user.storeId) return null
+    if (isOwnerRole(user?.role) && user.storeId) {
       const storeRow = await findStoreById(user.storeId)
       if (!storeRow) return null
-      assertStoreAccess({ role: "vendor", storeId: user.storeId }, storeRow.id)
+      assertStoreAccess({ role: "owner", storeId: user.storeId }, storeRow.id)
       return await dashboardFromDirectoryStore(storeRow)
     }
     return null

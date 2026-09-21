@@ -1,18 +1,22 @@
 /**
- * HMAC-signed tenant session cookie. Edge-safe (Web Crypto).
+ * HMAC-signed session cookie. Edge-safe (Web Crypto).
  * Payload never includes a password — only ids, role, and first-login flag.
  */
 
+import { canonicalizeRole, type AccountStatus, type Role } from "@/lib/roles"
+
 export const TENANT_COOKIE = "kem_tenant"
 
-export type StaffRole = "vendor" | "admin"
+/** @deprecated Use Role. Kept so older cookies still type-check during decode. */
+export type StaffRole = Role
 
 export interface TenantSession {
   sub: string
   email: string
-  role: StaffRole
+  role: Role
   storeId: string | null
   mustChangePassword: boolean
+  accountStatus: AccountStatus
   exp: number
 }
 
@@ -54,6 +58,8 @@ export async function encodeTenantSession(
 ): Promise<string> {
   const payload: TenantSession = {
     ...input,
+    role: canonicalizeRole(input.role),
+    accountStatus: input.accountStatus ?? "active",
     exp: input.exp ?? Math.floor(Date.now() / 1000) + TTL_SEC,
   }
   const body = b64url(new TextEncoder().encode(JSON.stringify(payload)))
@@ -72,9 +78,13 @@ export async function decodeTenantSession(token: string | undefined | null): Pro
   if (diff !== 0) return null
   try {
     const json = new TextDecoder().decode(unb64url(body))
-    const payload = JSON.parse(json) as TenantSession
-    if (!payload.sub || !payload.role || payload.exp < Math.floor(Date.now() / 1000)) return null
-    return payload
+    const raw = JSON.parse(json) as TenantSession & { role: string }
+    if (!raw.sub || !raw.role || raw.exp < Math.floor(Date.now() / 1000)) return null
+    return {
+      ...raw,
+      role: canonicalizeRole(raw.role),
+      accountStatus: raw.accountStatus === "pending" || raw.accountStatus === "rejected" ? raw.accountStatus : "active",
+    }
   } catch {
     return null
   }

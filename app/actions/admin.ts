@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import { getSessionProfile } from "@/lib/auth"
+import { canonicalizeRole, isAdminRole, isOwnerRole } from "@/lib/roles"
 
 type Result = { ok: boolean; error?: string }
 
@@ -16,8 +17,8 @@ async function requireAdmin() {
 }
 
 function revalidateAll() {
-  revalidatePath("/admin")
-  revalidatePath("/vendor")
+  revalidatePath("/admin/dashboard")
+  revalidatePath("/owner/dashboard")
   revalidatePath("/")
 }
 
@@ -102,8 +103,8 @@ export async function assignVendor(regionId: string, vendorId: string | null): P
       .eq("id", vendorId)
       .maybeSingle()
     if (!vendor) return { ok: false, error: "해당 사용자를 찾을 수 없습니다." }
-    if (vendor.role !== "vendor" && vendor.role !== "admin") {
-      return { ok: false, error: "판매자 역할인 사용자만 매장에 배정할 수 있습니다." }
+    if (!isOwnerRole(vendor.role) && !isAdminRole(vendor.role)) {
+      return { ok: false, error: "업주 역할인 사용자만 매장에 배정할 수 있습니다." }
     }
 
     // 한 판매자는 하나의 매장만 담당 — 기존 배정을 먼저 해제
@@ -126,7 +127,7 @@ export async function assignVendor(regionId: string, vendorId: string | null): P
 
 /* ------------------------------ 사용자 ------------------------------ */
 
-const ROLES = ["customer", "vendor", "admin"] as const
+const ROLES = ["customer", "owner", "vendor", "admin"] as const
 
 export async function updateUserRole(userId: string, role: string): Promise<Result> {
   const guard = await requireAdmin()
@@ -135,16 +136,17 @@ export async function updateUserRole(userId: string, role: string): Promise<Resu
   if (!ROLES.includes(role as (typeof ROLES)[number])) {
     return { ok: false, error: "올바르지 않은 역할입니다." }
   }
-  if (userId === guard.profile.id && role !== "admin") {
+  const nextRole = canonicalizeRole(role)
+  if (userId === guard.profile.id && nextRole !== "admin") {
     return { ok: false, error: "본인의 관리자 권한은 해제할 수 없습니다." }
   }
 
-  // 판매자 역할을 잃으면 담당 매장 배정도 함께 해제
-  if (role !== "vendor" && role !== "admin") {
+  // 업주 역할을 잃으면 담당 매장 배정도 함께 해제
+  if (nextRole !== "owner" && nextRole !== "admin") {
     await guard.supabase.from("regions").update({ vendor_id: null }).eq("vendor_id", userId)
   }
 
-  const { error } = await guard.supabase.from("profiles").update({ role }).eq("id", userId)
+  const { error } = await guard.supabase.from("profiles").update({ role: nextRole }).eq("id", userId)
   if (error) return { ok: false, error: error.message }
   revalidateAll()
   return { ok: true }

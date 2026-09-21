@@ -63,7 +63,7 @@ export async function vendorApproveClaim(claimId: string): Promise<ActionResult>
     console.log("[v0] vendor_approve_claim error:", error.message)
     return { ok: false, error: friendly(error.message) }
   }
-  revalidatePath("/vendor/claims")
+  revalidatePath("/owner/claims")
   return { ok: true }
 }
 
@@ -79,7 +79,7 @@ export async function vendorDisputeClaim(claimId: string, response: string): Pro
     console.log("[v0] vendor_dispute_claim error:", error.message)
     return { ok: false, error: friendly(error.message) }
   }
-  revalidatePath("/vendor/claims")
+  revalidatePath("/owner/claims")
   return { ok: true }
 }
 

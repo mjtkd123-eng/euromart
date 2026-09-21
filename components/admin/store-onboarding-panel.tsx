@@ -20,6 +20,8 @@ type Application = {
   documentsNote: string
   status: string
   rejectionReason: string | null
+  ownerUserId: string | null
+  source: string
 }
 
 type StoreRow = {
@@ -128,6 +130,20 @@ export function StoreOnboardingPanel() {
     await load()
   }
 
+  async function approveOnline(id: string) {
+    setBusy(true)
+    setError(null)
+    const res = await fetch(`/api/admin/applications/${id}/approve`, { method: "POST" })
+    const data = await res.json()
+    setBusy(false)
+    if (!res.ok) {
+      setError(data.error ?? "승인 실패")
+      return
+    }
+    setOk(data.notice ?? "온라인 입점 신청을 승인했습니다.")
+    await load()
+  }
+
   async function issue(e: React.FormEvent) {
     e.preventDefault()
     setBusy(true)
@@ -174,8 +190,10 @@ export function StoreOnboardingPanel() {
       <div className="flex items-start gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-4">
         <ShieldCheck className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
         <p className="text-sm leading-relaxed text-muted-foreground">
-          업주는 셀프 가입할 수 없습니다. 오프라인 서류를 검토한 뒤 여기서 매장과 업주 계정을 만듭니다.
-          임시 비밀번호는 <strong>지금 한 번만</strong> 보이며, 저장소에는 bcrypt 해시만 남습니다.
+          업주는 <code className="text-foreground">/owner/signup</code>으로 입점을 신청할 수 있습니다.
+          승인 전까지 계정은 <strong>pending</strong>이며 대시보드에 들어갈 수 없습니다.
+          오프라인 서류는 기존처럼 여기서 매장과 계정을 수동 발급하세요. 임시 비밀번호는{" "}
+          <strong>지금 한 번만</strong> 보이며, 저장소에는 bcrypt 해시만 남습니다.
         </p>
       </div>
 
@@ -204,7 +222,7 @@ export function StoreOnboardingPanel() {
           </div>
           <p className="mt-3 break-all text-xs text-muted-foreground">설정 링크: {issued.inviteUrl}</p>
           <Link
-            href={`/vendor/login?email=${encodeURIComponent(issued.email)}`}
+            href={`/owner/login?email=${encodeURIComponent(issued.email)}`}
             className="mt-3 inline-flex text-sm font-semibold text-primary underline-offset-4 hover:underline"
           >
             이 이메일로 업주 로그인 열기
@@ -227,19 +245,26 @@ export function StoreOnboardingPanel() {
                   <p className="font-semibold">{app.storeName}</p>
                   <p className="text-xs text-muted-foreground">
                     {app.legalName} · {app.businessNumber} · {app.citySlug}
+                    {app.source === "self_signup" ? " · 온라인 가입" : " · 오프라인 서류"}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
                     {app.contactName} · {app.contactEmail}
                   </p>
                   <p className="mt-2 text-sm text-muted-foreground">{app.documentsNote}</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => void reject(app.id)}>
                     반려
                   </Button>
-                  <Button type="button" size="sm" disabled={busy} onClick={() => fillFrom(app)}>
-                    검토 후 발급
-                  </Button>
+                  {app.ownerUserId ? (
+                    <Button type="button" size="sm" disabled={busy} onClick={() => void approveOnline(app.id)}>
+                      온라인 가입 승인
+                    </Button>
+                  ) : (
+                    <Button type="button" size="sm" disabled={busy} onClick={() => fillFrom(app)}>
+                      검토 후 발급
+                    </Button>
+                  )}
                 </div>
               </div>
             </li>

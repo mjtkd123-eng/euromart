@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import { getSessionProfile } from "@/lib/auth"
+import { isOwnerRole, isStaffRole } from "@/lib/roles"
 import { isSupabaseConfigured } from "@/lib/supabase/config"
 import { assertStoreAccess, StoreScopeError } from "@/lib/tenant-guard"
 import {
@@ -17,7 +18,7 @@ type Result = { ok: boolean; error?: string }
 async function requireVendorRegion(regionId: string) {
   const profile = await getSessionProfile()
   if (!profile) return { error: "로그인이 필요합니다." as const }
-  if (profile.role !== "vendor" && profile.role !== "admin") {
+  if (!isStaffRole(profile.role)) {
     return { error: "판매자 권한이 필요합니다." as const }
   }
 
@@ -36,7 +37,7 @@ async function requireVendorRegion(regionId: string) {
   const { data } = await supabase.from("regions").select("id, vendor_id").eq("id", regionId).maybeSingle()
 
   if (!data) return { error: "매장을 찾을 수 없습니다." as const }
-  if (profile.role === "vendor" && data.vendor_id !== profile.id) {
+  if (isOwnerRole(profile.role) && data.vendor_id !== profile.id) {
     return { error: "이 매장에 대한 권한이 없습니다." as const }
   }
   return { demo: false as const, supabase, profile }
@@ -83,7 +84,7 @@ export async function updateStore(input: {
       freeDeliveryOver: input.freeDeliveryOver,
     })
     if (!ok) return { ok: false, error: "매장을 찾을 수 없습니다." }
-    revalidatePath("/vendor")
+    revalidatePath("/owner/dashboard")
     revalidatePath("/")
     return { ok: true }
   }
@@ -105,7 +106,7 @@ export async function updateStore(input: {
     .eq("id", input.regionId)
 
   if (error) return { ok: false, error: error.message }
-  revalidatePath("/vendor")
+  revalidatePath("/owner/dashboard")
   revalidatePath("/")
   return { ok: true }
 }
@@ -137,7 +138,7 @@ export async function upsertListing(input: {
       featured: input.featured,
       active: input.active,
     })
-    revalidatePath("/vendor")
+    revalidatePath("/owner/dashboard")
     revalidatePath("/")
     return { ok: true }
   }
@@ -155,7 +156,7 @@ export async function upsertListing(input: {
   )
 
   if (error) return { ok: false, error: error.message }
-  revalidatePath("/vendor")
+  revalidatePath("/owner/dashboard")
   revalidatePath("/")
   return { ok: true }
 }
@@ -166,7 +167,7 @@ export async function deleteListing(regionId: string, listingId: string): Promis
 
   if (guard.demo) {
     await upsertListingOverride(regionId, listingProductId(regionId, listingId), { active: false })
-    revalidatePath("/vendor")
+    revalidatePath("/owner/dashboard")
     revalidatePath("/")
     return { ok: true }
   }
@@ -178,7 +179,7 @@ export async function deleteListing(regionId: string, listingId: string): Promis
     .eq("region_id", regionId)
 
   if (error) return { ok: false, error: error.message }
-  revalidatePath("/vendor")
+  revalidatePath("/owner/dashboard")
   revalidatePath("/")
   return { ok: true }
 }
@@ -223,7 +224,7 @@ export async function upsertPromotion(input: {
       active: input.active,
     })
     if (!saved.ok) return { ok: false, error: saved.error }
-    revalidatePath("/vendor")
+    revalidatePath("/owner/dashboard")
     revalidatePath("/")
     return { ok: true }
   }
@@ -249,7 +250,7 @@ export async function upsertPromotion(input: {
     }
     return { ok: false, error: error.message }
   }
-  revalidatePath("/vendor")
+  revalidatePath("/owner/dashboard")
   return { ok: true }
 }
 
@@ -260,7 +261,7 @@ export async function deletePromotion(regionId: string, promotionId: string): Pr
   if (guard.demo) {
     const ok = await deleteDirectoryPromotion(regionId, promotionId)
     if (!ok) return { ok: false, error: "프로모션을 찾을 수 없습니다." }
-    revalidatePath("/vendor")
+    revalidatePath("/owner/dashboard")
     return { ok: true }
   }
 
@@ -271,7 +272,7 @@ export async function deletePromotion(regionId: string, promotionId: string): Pr
     .eq("region_id", regionId)
 
   if (error) return { ok: false, error: error.message }
-  revalidatePath("/vendor")
+  revalidatePath("/owner/dashboard")
   return { ok: true }
 }
 
@@ -311,7 +312,7 @@ export async function updateOrderStatus(
     .eq("region_id", regionId)
 
   if (error) return { ok: false, error: error.message }
-  revalidatePath("/vendor")
+  revalidatePath("/owner/dashboard")
   return { ok: true }
 }
 
@@ -338,7 +339,7 @@ export async function quickUpdateStock(
 
   if (guard.demo) {
     await upsertListingOverride(regionId, listingProductId(regionId, listingId), { stock })
-    revalidatePath("/vendor")
+    revalidatePath("/owner/dashboard")
     revalidatePath("/")
     return { ok: true }
   }
@@ -350,7 +351,7 @@ export async function quickUpdateStock(
     .eq("region_id", regionId)
 
   if (error) return { ok: false, error: error.message }
-  revalidatePath("/vendor")
+  revalidatePath("/owner/dashboard")
   revalidatePath("/")
   return { ok: true }
 }

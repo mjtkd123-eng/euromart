@@ -1,19 +1,27 @@
 "use client"
 
 import type React from "react"
-import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { AuthShell } from "@/components/auth/auth-shell"
 import { useDetectedLang } from "@/lib/use-detected-lang"
 import type { Lang } from "@/lib/i18n"
+import { DEMO_CUSTOMER_EMAIL, DEMO_CUSTOMER_PASSWORD } from "@/lib/demo-admin-public"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { Suspense, useState } from "react"
 
-// 계정 존재 여부를 노출하지 않도록 자격 증명 오류만 일반화합니다.
+function safeCustomerNext(next: string | null): string | null {
+  if (!next || !next.startsWith("/") || next.startsWith("//")) return null
+  if (next.startsWith("/owner") || next.startsWith("/admin") || next.startsWith("/vendor") || next.startsWith("/ops")) {
+    return null
+  }
+  return next
+}
+
 function loginErrorMessage(error: unknown, lang: Lang): string {
+  if (typeof error === "string" && error.trim()) return error
   const { code, status } = (error ?? {}) as { code?: string; status?: number }
   const ko = lang === "ko"
 
@@ -25,40 +33,43 @@ function loginErrorMessage(error: unknown, lang: Lang): string {
   if (code === "over_request_rate_limit" || status === 429) {
     return ko ? "시도가 너무 많습니다. 잠시 후 다시 시도해 주세요." : "Too many attempts. Please try again shortly."
   }
-  if (code === "invalid_credentials") {
-    return ko ? "이메일 또는 비밀번호가 올바르지 않습니다." : "That email or password is incorrect."
-  }
-  return ko ? "문제가 발생했습니다. 다시 시도해 주세요." : "Something went wrong. Please try again."
+  return ko ? "이메일 또는 비밀번호가 올바르지 않습니다." : "That email or password is incorrect."
 }
 
-export default function LoginPage() {
+function CustomerLoginForm() {
   const { lang, t } = useDetectedLang()
+  const params = useSearchParams()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const next = params.get("next")
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    const supabase = createClient()
     setIsLoading(true)
     setError(null)
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) throw error
-      router.push("/account")
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, portal: "customer" }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw data.error ?? "login failed"
+      const dest = safeCustomerNext(next) ?? data.redirectTo ?? "/account"
+      router.push(dest)
       router.refresh()
-    } catch (error: unknown) {
-      console.error("[v0] Login error:", error)
-      setError(loginErrorMessage(error, lang))
+    } catch (err: unknown) {
+      setError(loginErrorMessage(err, lang))
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <AuthShell title={t("loginTitle")} subtitle={t("loginSubtitle")}>
+    <AuthShell title={t("loginTitle")} subtitle="일반 회원 전용입니다. 업주·관리자 계정은 각각의 포털에서만 로그인할 수 있습니다.">
       <form onSubmit={handleLogin} className="flex flex-col gap-5">
         <div className="grid gap-2">
           <Label htmlFor="email">{t("emailLabel")}</Label>
@@ -94,11 +105,29 @@ export default function LoginPage() {
           {t("signUpAction")}
         </Link>
       </p>
-      <p className="mt-3 text-center text-sm">
-        <Link href="/vendor/login" className="font-semibold text-primary underline-offset-4 hover:underline">
-          마트 업주 / 본부 관리자 로그인
-        </Link>
+      <p className="mt-6 whitespace-pre-line rounded-xl bg-muted/60 px-3 py-2 text-center text-[11px] leading-relaxed text-muted-foreground">
+        {`데모 일반 회원\n${DEMO_CUSTOMER_EMAIL} / ${DEMO_CUSTOMER_PASSWORD}`}
       </p>
+      <ul className="mt-5 flex flex-col gap-1 text-center text-xs text-muted-foreground">
+        <li>
+          <Link href="/owner/login" className="underline-offset-4 hover:text-foreground hover:underline">
+            업주(파트너) 로그인
+          </Link>
+        </li>
+        <li>
+          <Link href="/admin/login" className="underline-offset-4 hover:text-foreground hover:underline">
+            플랫폼 관리자 로그인
+          </Link>
+        </li>
+      </ul>
     </AuthShell>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<AuthShell title="로그인" subtitle="불러오는 중…" />}>
+      <CustomerLoginForm />
+    </Suspense>
   )
 }

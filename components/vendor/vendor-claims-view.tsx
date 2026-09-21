@@ -241,8 +241,8 @@ export function VendorClaimsView({
             variant="ghost"
             size="icon"
             className="shrink-0"
-            aria-label="판매자 대시보드"
-            render={<Link href="/vendor" />}
+            aria-label="업주 대시보드"
+            render={<Link href="/owner/dashboard" />}
           >
             <ArrowLeft className="size-5" />
           </Button>

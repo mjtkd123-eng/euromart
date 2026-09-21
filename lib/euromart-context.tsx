@@ -18,7 +18,7 @@ export interface CurrentUser {
   id: string
   email: string | null
   fullName: string | null
-  role: "customer" | "vendor" | "admin"
+  role: "customer" | "vendor" | "owner" | "admin"
 }
 
 /** 장바구니 라인 — 지역이 바뀌면 통화가 달라지므로 지역별로 분리 저장 */

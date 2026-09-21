@@ -1,14 +1,16 @@
 # Vendor tenant admin (manual account issuance)
 
-K-EuroMart store owners do **not** self-register. Super Admin reviews offline onboarding documents, then issues a store + owner account.
+See also **`docs/auth-roles.md`** — customer, owner, and admin logins are split.
+
+Store owners may submit `/owner/signup` (pending until Super Admin approves) **or** Super Admin issues a store + owner account after offline documents.
 
 ## Access
 
 | Actor | Login | Data |
 |---|---|---|
-| Customer | `/auth/login` · `/auth/sign-up` | Own orders only |
-| Store owner (`vendor` / STORE_OWNER) | `/vendor/login` | Own `store_id` only |
-| Super Admin (`admin`) | `/vendor/login` | All stores; **cannot read plaintext passwords** |
+| Customer | `/auth/login` · `/auth/sign-up` | Own orders; mypage `/account` |
+| Store owner (`owner`, legacy `vendor`) | `/owner/login` · `/owner/signup` | Own `store_id` only · `/owner/dashboard` |
+| Super Admin (`admin`) | `/admin/login` (no public signup) | All stores; **cannot read plaintext passwords** · `/admin/dashboard` |
 
 Public domain: `k-euromart.com`. Support copy uses `support@k-euromart.com` / `privacy@k-euromart.com`. Real delivery needs MX (or Resend) plus `RESEND_API_KEY` and `MAIL_FROM=K-EuroMart <noreply@k-euromart.com>`.
 
@@ -17,10 +19,10 @@ Demo store owner (Vienna 1호점 only): `owner.vienna@k-euromart.demo` / `EuroMa
 
 ## Schema (Postgres)
 
-See `supabase/migrations/20260917_vendor_tenant_auth.sql`.
+See `supabase/migrations/20260917_vendor_tenant_auth.sql` and `supabase/migrations/20260921_split_auth_roles.sql`.
 
 - `stores` — `id`, `name`, `business_number`, `status` (`pending` / `active` / `inactive`)
-- `profiles` — `id`, `email`, `role`, `must_change_password` (no password column)
+- `profiles` — `id`, `email`, `role` (`customer` / `owner` / `admin`), `account_status`, `must_change_password` (no password column)
 - `store_vendors` — `(store_id, user_id)` tenant membership
 - `store_applications` — document queue
 - `auth_action_tokens` — SHA-256 of invite/reset secrets
@@ -34,7 +36,7 @@ Temporary passwords are 16-character unambiguous alphanumerics (no `+`, `O`, `0`
 | Method | Path | Who |
 |---|---|---|
 | POST | `/api/admin/stores/create` | Super Admin — create store + owner, return temp password **once** |
-| POST | `/api/auth/login` | Owner / admin; `mustChangePassword` → `/auth/change-password` |
+| POST | `/api/auth/login` | `{ email, password, portal }`; owner `mustChangePassword` → `/auth/change-password` |
 | POST | `/api/auth/change-password` | Authenticated owner |
 | POST | `/api/auth/reset-password-request` | Public; does not reveal whether the email exists |
 | GET | `/api/vendor/stores/:storeId` | Owner; **403 if `store_id` mismatch** |
@@ -47,6 +49,7 @@ Temporary passwords are 16-character unambiguous alphanumerics (no `+`, `O`, `0`
 
 ## UI
 
-- Super Admin: `/admin` → **입점 심사 · 계정 발급**
-- Owner login: `/vendor/login` (forgot-password link)
-- First login: `/auth/change-password` (mandatory)
+- Super Admin: `/admin/dashboard` → **입점 심사 · 계정 발급**
+- Owner login: `/owner/login` (forgot-password link)
+- Owner signup: `/owner/signup` (pending until approval)
+- First login: `/auth/change-password` (mandatory for HQ-issued temp passwords)

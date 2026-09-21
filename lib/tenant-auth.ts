@@ -13,11 +13,22 @@ import {
   createStoreAndOwner,
   findUserById,
   issueResetToken,
+  signupCustomer,
+  signupOwnerApplication,
   updateDirectoryPassword,
   type CreateStoreInput,
+  type CustomerSignupInput,
+  type OwnerSignupInput,
 } from "@/lib/tenant-directory"
 import { sendOwnerCredentials, sendPasswordResetMail } from "@/lib/owner-mail"
 import { isStrongPassword } from "@/lib/password"
+import {
+  canonicalizeRole,
+  homePathForRole,
+  portalMismatchMessage,
+  type AccountStatus,
+  type Role,
+} from "@/lib/roles"
 
 export async function readTenantSession(): Promise<TenantSession | null> {
   const store = await cookies()
@@ -35,10 +46,40 @@ export async function clearTenantSession(): Promise<void> {
   store.set(TENANT_COOKIE, "", { ...tenantCookieOptions(), maxAge: 0 })
 }
 
-export async function loginStaff(email: string, password: string): Promise<
-  | { ok: true; session: TenantSession }
-  | { ok: false; error: string }
-> {
+function sessionFromUser(user: {
+  id: string
+  email: string
+  role: string
+  storeId: string | null
+  mustChangePassword: boolean
+  accountStatus?: AccountStatus
+}): Omit<TenantSession, "exp"> {
+  return {
+    sub: user.id,
+    email: user.email,
+    role: canonicalizeRole(user.role),
+    storeId: user.storeId,
+    mustChangePassword: user.mustChangePassword,
+    accountStatus: user.accountStatus === "pending" || user.accountStatus === "rejected" ? user.accountStatus : "active",
+  }
+}
+
+export function redirectForSession(session: Pick<TenantSession, "role" | "mustChangePassword" | "accountStatus">): string {
+  if (session.mustChangePassword) return "/auth/change-password"
+  if (canonicalizeRole(session.role) === "owner" && session.accountStatus === "pending") {
+    return "/owner/pending"
+  }
+  if (canonicalizeRole(session.role) === "owner" && session.accountStatus === "rejected") {
+    return "/owner/login?reason=rejected"
+  }
+  return homePathForRole(session.role)
+}
+
+export async function loginWithPortal(
+  email: string,
+  password: string,
+  portal: Role,
+): Promise<{ ok: true; session: TenantSession } | { ok: false; error: string }> {
   if (isSupabaseConfigured()) {
     try {
       const { createClient } = await import("@/lib/supabase/server")
@@ -48,18 +89,28 @@ export async function loginStaff(email: string, password: string): Promise<
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("id, email, full_name, role, must_change_password")
+        .select("id, email, full_name, role, must_change_password, account_status")
         .eq("id", data.user.id)
         .maybeSingle()
 
-      const role = (profile?.role ?? data.user.user_metadata?.role) as string
-      if (role !== "vendor" && role !== "admin") {
+      const role = canonicalizeRole((profile?.role ?? data.user.user_metadata?.role) as string)
+      if (role !== portal) {
         await supabase.auth.signOut()
-        return { ok: false, error: "업주 또는 본부 관리자 계정이 아닙니다." }
+        return { ok: false, error: portalMismatchMessage(portal) }
+      }
+
+      const accountStatus: AccountStatus =
+        profile?.account_status === "pending" || profile?.account_status === "rejected"
+          ? profile.account_status
+          : "active"
+
+      if (role === "owner" && accountStatus === "rejected") {
+        await supabase.auth.signOut()
+        return { ok: false, error: "입점 신청이 반려된 계정입니다. 본부에 문의해 주세요." }
       }
 
       let storeId: string | null = null
-      if (role === "vendor") {
+      if (role === "owner") {
         const { data: link } = await supabase
           .from("store_vendors")
           .select("store_id")
@@ -68,13 +119,14 @@ export async function loginStaff(email: string, password: string): Promise<
         storeId = link?.store_id ?? null
       }
 
-      const session = {
-        sub: data.user.id,
+      const session = sessionFromUser({
+        id: data.user.id,
         email: profile?.email ?? data.user.email ?? email,
-        role: role as "vendor" | "admin",
+        role,
         storeId,
         mustChangePassword: Boolean(profile?.must_change_password),
-      }
+        accountStatus,
+      })
       await writeTenantSession(session)
       return { ok: true, session: { ...session, exp: 0 } }
     } catch {
@@ -85,15 +137,110 @@ export async function loginStaff(email: string, password: string): Promise<
   const user = await authenticateDirectory(email, password)
   if (!user) return { ok: false, error: "이메일 또는 비밀번호가 올바르지 않습니다." }
 
-  const session = {
-    sub: user.id,
-    email: user.email,
-    role: user.role,
-    storeId: user.storeId,
-    mustChangePassword: user.mustChangePassword,
+  const role = canonicalizeRole(user.role)
+  if (role !== portal) return { ok: false, error: portalMismatchMessage(portal) }
+  if (role === "owner" && user.accountStatus === "rejected") {
+    return { ok: false, error: "입점 신청이 반려된 계정입니다. 본부에 문의해 주세요." }
   }
+
+  const session = sessionFromUser(user)
   await writeTenantSession(session)
   return { ok: true, session: { ...session, exp: 0 } }
+}
+
+/** @deprecated Use loginWithPortal. Kept for any leftover staff callers. */
+export async function loginStaff(email: string, password: string) {
+  const owner = await loginWithPortal(email, password, "owner")
+  if (owner.ok) return owner
+  return loginWithPortal(email, password, "admin")
+}
+
+export async function registerCustomer(input: CustomerSignupInput) {
+  if (isSupabaseConfigured()) {
+    try {
+      const { createClient } = await import("@/lib/supabase/server")
+      const supabase = await createClient()
+      const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "http://127.0.0.1:43147"
+      const { error } = await supabase.auth.signUp({
+        email: input.email,
+        password: input.password,
+        options: {
+          emailRedirectTo: `${origin}/auth/callback`,
+          data: {
+            full_name: input.fullName,
+            role: "customer",
+            terms_accepted_at: new Date().toISOString(),
+            terms_version: "2026-08-eu-gdpr",
+          },
+        },
+      })
+      if (error) return { error: error.message }
+      return { ok: true as const, needsEmailConfirm: true }
+    } catch {
+      return { error: "회원가입에 실패했습니다." }
+    }
+  }
+
+  const created = await signupCustomer(input)
+  if ("error" in created) return created
+  const session = sessionFromUser({
+    ...created.user,
+    mustChangePassword: false,
+  })
+  await writeTenantSession(session)
+  return { ok: true as const, needsEmailConfirm: false, session: { ...session, exp: 0 } }
+}
+
+export async function registerOwner(input: OwnerSignupInput) {
+  if (isSupabaseConfigured()) {
+    try {
+      const { createClient } = await import("@/lib/supabase/server")
+      const supabase = await createClient()
+      const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "http://127.0.0.1:43147"
+      const { data, error } = await supabase.auth.signUp({
+        email: input.email,
+        password: input.password,
+        options: {
+          emailRedirectTo: `${origin}/auth/callback`,
+          data: {
+            full_name: input.fullName,
+            role: "owner",
+            account_status: "pending",
+          },
+        },
+      })
+      if (error) return { error: error.message }
+      const userId = data.user?.id
+      if (userId) {
+        await supabase.from("profiles").upsert({
+          id: userId,
+          email: input.email.trim().toLowerCase(),
+          full_name: input.fullName,
+          role: "owner",
+          account_status: "pending",
+        })
+        await supabase.from("store_applications").insert({
+          store_name: input.storeName,
+          legal_name: input.legalName,
+          business_number: input.businessNumber,
+          city_slug: input.citySlug,
+          contact_email: input.email.trim().toLowerCase(),
+          contact_name: input.fullName,
+          documents_note: input.documentsNote,
+          address: input.address,
+          phone: input.phone,
+          source: "self_signup",
+          owner_user_id: userId,
+          status: "submitted",
+        })
+      }
+      return { ok: true as const }
+    } catch {
+      return { error: "입점 신청에 실패했습니다." }
+    }
+  }
+
+  return signupOwnerApplication(input)
 }
 
 export async function changeOwnPassword(

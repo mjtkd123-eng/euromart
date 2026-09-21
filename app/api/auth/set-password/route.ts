@@ -2,6 +2,7 @@ import { jsonError, jsonOk } from "@/lib/api"
 import { consumeActionToken, updateDirectoryPassword } from "@/lib/tenant-directory"
 import { isStrongPassword } from "@/lib/password"
 import { writeTenantSession } from "@/lib/tenant-auth"
+import { homePathForRole } from "@/lib/roles"
 
 export const dynamic = "force-dynamic"
 
@@ -32,7 +33,8 @@ export async function POST(request: Request) {
     role: user.role,
     storeId: user.storeId,
     mustChangePassword: false,
+    accountStatus: user.accountStatus ?? "active",
   })
 
-  return jsonOk({ ok: true, redirectTo: user.role === "admin" ? "/admin" : "/vendor" })
+  return jsonOk({ ok: true, redirectTo: homePathForRole(user.role) })
 }

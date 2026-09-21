@@ -1,5 +1,5 @@
 import { jsonError, jsonOk } from "@/lib/api"
-import { changeOwnPassword, readTenantSession } from "@/lib/tenant-auth"
+import { changeOwnPassword, readTenantSession, redirectForSession } from "@/lib/tenant-auth"
 
 export const dynamic = "force-dynamic"
 
@@ -20,5 +20,8 @@ export async function POST(request: Request) {
     body.newPassword ?? "",
   )
   if (!result.ok) return jsonError(result.error)
-  return jsonOk({ ok: true, redirectTo: session.role === "admin" ? "/admin" : "/vendor" })
+  return jsonOk({
+    ok: true,
+    redirectTo: redirectForSession({ ...session, mustChangePassword: false }),
+  })
 }

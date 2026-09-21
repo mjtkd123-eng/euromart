@@ -4,14 +4,22 @@
  */
 
 export type Actor = {
-  role: "customer" | "vendor" | "admin"
+  role: "customer" | "owner" | "admin" | "vendor" | string
   storeId: string | null
+}
+
+function isAdmin(role: string | null | undefined): boolean {
+  return role === "admin"
+}
+
+function isOwner(role: string | null | undefined): boolean {
+  return role === "owner" || role === "vendor"
 }
 
 export function canAccessStore(actor: Actor, targetStoreId: string): boolean {
   if (!targetStoreId) return false
-  if (actor.role === "admin") return true
-  if (actor.role !== "vendor") return false
+  if (isAdmin(actor.role)) return true
+  if (!isOwner(actor.role)) return false
   return actor.storeId === targetStoreId
 }
 
@@ -25,8 +33,8 @@ export class StoreScopeError extends Error {
 
 export function assertStoreAccess(actor: Actor, targetStoreId: string): void {
   if (!actor) throw new StoreScopeError("Unauthorized", 401)
-  if (actor.role === "admin") return
-  if (actor.role !== "vendor") throw new StoreScopeError("Forbidden", 403)
+  if (isAdmin(actor.role)) return
+  if (!isOwner(actor.role)) throw new StoreScopeError("Forbidden", 403)
   if (!actor.storeId || actor.storeId !== targetStoreId) {
     throw new StoreScopeError("store_id mismatch: this account cannot access another store", 403)
   }

@@ -385,7 +385,7 @@ export function ClaimsPolicyView({ audience = "staff" }: { audience?: "staff" | 
           </div>
           <div className="flex flex-wrap gap-2">
             <Link
-              href="/vendor/claims"
+              href="/owner/claims"
               className="inline-flex h-11 items-center justify-center rounded-xl border border-border px-4 text-sm font-semibold transition-colors hover:bg-muted"
             >
               {lang === "ko" ? "업주 큐" : "Store queue"}

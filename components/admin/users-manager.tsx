@@ -69,7 +69,8 @@ export function UsersManager({ users, selfId }: { users: AdminUser[]; selfId: st
                 className="h-9 rounded-lg border border-input bg-background px-2 text-xs text-foreground disabled:opacity-60"
               >
                 <option value="customer">고객</option>
-                <option value="vendor">판매자</option>
+                <option value="owner">업주</option>
+                <option value="vendor">업주 (레거시)</option>
                 <option value="admin">관리자</option>
               </select>
             </div>

@@ -35,7 +35,7 @@ function SetPasswordForm() {
       setError(data.error ?? "설정에 실패했습니다.")
       return
     }
-    router.push(data.redirectTo ?? "/vendor")
+    router.push(data.redirectTo ?? "/owner/dashboard")
     router.refresh()
   }
 

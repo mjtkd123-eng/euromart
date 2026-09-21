@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic"
 
 export default async function ChangePasswordPage() {
   const session = await readTenantSession()
-  if (!session) redirect("/vendor/login?next=/auth/change-password")
+  if (!session) redirect("/owner/login?next=/auth/change-password")
 
   return (
     <ChangePasswordForm
