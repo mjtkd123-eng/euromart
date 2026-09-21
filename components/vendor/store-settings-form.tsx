@@ -83,7 +83,7 @@ export function StoreSettingsForm({ store }: { store: VendorStore }) {
         </p>
         <div className="mt-4 flex flex-col gap-3">
           <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="공지 (한글)" htmlFor="announcementKo">
+            <Field label="세일/이벤트 공지 (한글)" htmlFor="announcementKo">
               <Textarea
                 id="announcementKo"
                 rows={2}
