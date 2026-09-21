@@ -10,7 +10,7 @@ export default function AdminLoginPage() {
       demoHint={`데모 본부 관리자 (시드 전용)\n${DEMO_ADMIN_EMAIL} / ${DEMO_ADMIN_PASSWORD}`}
       otherPortals={[
         { href: "/auth/login", label: "일반 회원 로그인" },
-        { href: "/owner/login", label: "업주 파트너 로그인" },
+        { href: "/owner", label: "업주 로그인/신청" },
       ]}
     />
   )

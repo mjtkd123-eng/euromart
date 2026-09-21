@@ -5,7 +5,7 @@ K-EuroMart keeps **three isolated login/signup systems**. A role on `profiles.ro
 | Role | Who | Public signup | Login | After login |
 |---|---|---|---|---|
 | `customer` | Shopper | Yes — `/auth/sign-up` | `/auth/login` | `/account` (mypage) |
-| `owner` | Store partner | Yes — `/owner/signup` (business fields). Status is **`pending` until Super Admin approves** | `/owner/login` | `/owner/dashboard` |
+| `owner` | Store partner | Yes — `/owner` landing + `/owner/signup`. Status is **`pending` until Super Admin approves** | `/owner/login` or landing modal | `/owner/dashboard` |
 | `admin` | Platform HQ | **No.** Seed / Super Admin issuance only | `/admin/login` | `/admin/dashboard` |
 
 Legacy DB value `vendor` is treated as `owner`.
@@ -16,7 +16,7 @@ Legacy DB value `vendor` is treated as `owner`.
 
 - Unauthenticated visits to a gated area go to **that group’s login**.
 - The wrong role hitting another group’s page is sent to `/forbidden` (403 UI).
-- Pending owners cannot open `/owner/dashboard`; they stay on `/owner/pending`.
+- `/owner` is a public partner landing (login + apply CTAs). `/owner/dashboard` stays gated.
 - `/vendor/*` URLs redirect to `/owner/*` so old bookmarks keep working.
 
 ## Demo accounts (no Supabase)

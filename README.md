@@ -65,7 +65,7 @@ Login and signup are **fully separated by role**. See `docs/auth-roles.md`.
 | Who | Signup | Login | Home |
 |---|---|---|---|
 | 일반 회원 (`customer`) | `/auth/sign-up` | `/auth/login` | `/account` |
-| 업주 파트너 (`owner`) | `/owner/signup` (승인 전까지 pending) | `/owner/login` | `/owner/dashboard` |
+| 업주 파트너 (`owner`) | `/owner` 랜딩 · `/owner/signup` (승인 전까지 pending) | `/owner/login` | `/owner/dashboard` |
 | 플랫폼 관리자 (`admin`) | 없음 (시드 전용) | `/admin/login` | `/admin/dashboard` |
 
 Demo passwords (bcrypt in `.data/tenant-auth.json`):

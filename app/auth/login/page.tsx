@@ -110,8 +110,8 @@ function CustomerLoginForm() {
       </p>
       <ul className="mt-5 flex flex-col gap-1 text-center text-xs text-muted-foreground">
         <li>
-          <Link href="/owner/login" className="underline-offset-4 hover:text-foreground hover:underline">
-            업주(파트너) 로그인
+          <Link href="/owner" className="underline-offset-4 hover:text-foreground hover:underline">
+            업주 로그인/신청
           </Link>
         </li>
         <li>

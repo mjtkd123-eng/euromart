@@ -166,8 +166,8 @@ export default function SignUpPage() {
       </p>
       <p className="mt-3 text-center text-xs text-muted-foreground">
         마트 업주이신가요?{" "}
-        <Link href="/owner/signup" className="font-semibold text-primary underline-offset-4 hover:underline">
-          업주 입점 신청
+        <Link href="/owner" className="font-semibold text-primary underline-offset-4 hover:underline">
+          업주 로그인/신청
         </Link>
       </p>
     </AuthShell>

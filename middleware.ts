@@ -48,10 +48,16 @@ export async function middleware(request: NextRequest) {
     return redirectTo(request, "/admin/dashboard", supabaseResponse)
   }
 
+  const isOwnerPublic =
+    path === "/owner" ||
+    path === "/owner/" ||
+    path === "/owner/login" ||
+    path === "/owner/signup" ||
+    path === "/owner/pending"
   const isOwnerLogin = path === "/owner/login" || path === "/owner/signup"
   const isAdminLogin = path === "/admin/login"
   const isCustomerAuth = path.startsWith("/auth/")
-  const ownerGated = path.startsWith("/owner") && !isOwnerLogin && path !== "/owner/pending"
+  const ownerGated = path.startsWith("/owner") && !isOwnerPublic
   const adminGated = path.startsWith("/admin") && !isAdminLogin
   const opsGated = path.startsWith("/ops")
   const apiAdmin = path.startsWith("/api/admin")
