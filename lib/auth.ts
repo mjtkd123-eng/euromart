@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { isSupabaseConfigured } from "@/lib/supabase/config"
 import { readTenantSession } from "@/lib/tenant-auth"
+import { findUserById } from "@/lib/tenant-directory"
 import {
   canonicalizeRole,
   homePathForRole,
@@ -67,10 +68,11 @@ export async function getSessionProfile(): Promise<SessionProfile | null> {
 
   const sess = await readTenantSession()
   if (!sess) return null
+  const directoryUser = await findUserById(sess.sub)
   return {
     id: sess.sub,
     email: sess.email,
-    fullName: sess.email,
+    fullName: directoryUser?.fullName ?? sess.email,
     role: sess.role,
     storeId: sess.storeId,
     mustChangePassword: sess.mustChangePassword,
