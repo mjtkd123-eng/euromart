@@ -10,6 +10,7 @@ const notoSansKr = Noto_Sans_KR({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://k-euromart.com'),
   title: 'K-EuroMart | 유럽 한국 식료품 배달',
   description:
     '부다페스트, 베를린, 파리, 비엔나, 프라하 등 유럽 주요 도시의 한국 식료품을 현지 통화로 주문하세요. 도시별 매장에서 신선한 한식 재료를 집앞까지 배달합니다.',

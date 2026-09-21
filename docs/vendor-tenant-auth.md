@@ -10,7 +10,9 @@ K-EuroMart store owners do **not** self-register. Super Admin reviews offline on
 | Store owner (`vendor` / STORE_OWNER) | `/vendor/login` | Own `store_id` only |
 | Super Admin (`admin`) | `/vendor/login` | All stores; **cannot read plaintext passwords** |
 
-Demo HQ: `admin@k-euromart.demo` / `EuroMart-Admin-2026!`
+Public domain: `k-euromart.com`. Support copy uses `support@k-euromart.com` / `privacy@k-euromart.com`. Real delivery needs MX (or Resend) plus `RESEND_API_KEY` and `MAIL_FROM=K-EuroMart <noreply@k-euromart.com>`.
+
+Demo HQ login (not a real mailbox): `admin@k-euromart.demo` / `EuroMart-Admin-2026!`
 
 ## Schema (Postgres)
 

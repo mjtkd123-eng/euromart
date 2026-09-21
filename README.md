@@ -2,8 +2,8 @@
 
 유럽 주요 도시에서 한국 식료품을 현지 통화로 주문하는 배달 스토어프론트입니다.
 
-Live demo: [euromart-iota.vercel.app](https://euromart-iota.vercel.app)  
-Source: [github.com/mjtkd123-eng/euromart](https://github.com/mjtkd123-eng/euromart)
+Official domain: [k-euromart.com](https://k-euromart.com) (Spaceship 등록됨. 앱에 연결하려면 DNS를 배포 호스트로 바꿔야 합니다.)  
+Source: [cursor.com/codebase/mjtkd123/euromart](https://cursor.com/codebase/mjtkd123/euromart)
 
 Shoppers pick a city and store (Budapest, Berlin, Paris, Vienna, Prague, and more), browse Korean groceries, and check out with dual-currency prices (store currency + EUR). Vendors manage listings and orders. Admins manage regions, users, FX rates, and claims.
 
@@ -45,6 +45,9 @@ STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 CRON_SECRET=
+NEXT_PUBLIC_SITE_URL=https://k-euromart.com
+RESEND_API_KEY=
+MAIL_FROM=K-EuroMart <noreply@k-euromart.com>
 ```
 
 FX and payment flow is documented in `docs/architecture-fx-payments.md`.

@@ -1,5 +1,6 @@
 import "server-only"
 import { recordMail } from "@/lib/tenant-directory"
+import { MAIL_FROM_DEFAULT }
 
 export async function sendOwnerCredentials(input: {
   to: string
@@ -40,7 +41,7 @@ export async function sendOwnerCredentials(input: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: process.env.MAIL_FROM ?? "K-EuroMart <noreply@k-euromart.demo>",
+        from: process.env.MAIL_FROM ?? MAIL_FROM_DEFAULT,
         to: [input.to],
         subject,
         text: body,
